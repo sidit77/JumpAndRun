@@ -15,6 +15,7 @@ add_subdirectory(libs/glfw)
 include_directories(include)
 include_directories(libs/glad/include)
 include_directories(libs/glfw/include)
+include_directories(libs/glm/glm)
 
 file(GLOB all_SRCS "src/*.cpp")
 

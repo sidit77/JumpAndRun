@@ -33,7 +33,7 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
 
     {
-        Game game;
+        jnr::Game game;
 
         double lastupdate = glfwGetTime();
         int timestep = 60;
@@ -42,7 +42,7 @@ int main() {
         while (!glfwWindowShouldClose(window)){
             while (glfwGetTime() - lastupdate > 1.0 / timestep) {
                 lastupdate += 1.0 / timestep;
-                game.update(speed * (float)(1.0f / timestep));
+                game.update(speed * (float)(1.0f / timestep), window);
             }
 
             {
