@@ -1,5 +1,10 @@
 #pragma once
 
-#include <stdio.h>
+class Game {
+public:
+    Game();
+    ~Game();
+    void update(float timestep);
+    void render();
+};
 
-void testfunc();

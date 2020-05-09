@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
-project(JumpAndRun C)
+project(JumpAndRun)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 add_library(glad "libs/glad/src/glad.c")
 
@@ -16,9 +16,9 @@ include_directories(include)
 include_directories(libs/glad/include)
 include_directories(libs/glfw/include)
 
-file(GLOB all_SRCS "src/*.c")
+file(GLOB all_SRCS "src/*.cpp")
 
-add_executable(JumpAndRun main.c ${all_SRCS})
+add_executable(JumpAndRun main.cpp ${all_SRCS})
 
 target_link_libraries(JumpAndRun glfw)
 target_link_libraries(JumpAndRun glad)
