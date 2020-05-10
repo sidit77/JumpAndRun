@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <algorithm>
 #include <game.h>
+#include <imgui.h>
 
 using namespace jnr;
 
@@ -19,16 +20,16 @@ Game::Game() : player(20, 290), platforms() {
 
 void Game::update(float timestep, GLFWwindow* window) {
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        player.posx -=5;
+        player.posx -= 300 * timestep;
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        player.posx +=5;
+        player.posx += 300 * timestep;
     if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         player.jump();
     player.update(timestep, platforms);
 }
 
-void Game::render() {
-    glColor3f(0.0,0.0,1.0f);
+void Game::render(float catchup) {
+    glColor3f(0.0,0.43,0.67f);
     glBegin(GL_QUADS);
     for(const Platform& p : platforms){
         glVertex2f(p.x    ,p.y    );
@@ -37,17 +38,25 @@ void Game::render() {
         glVertex2f(p.x    ,p.y-p.h);
     }
     glEnd();
-    glColor3f(1.0f,0.0,0.0);
+    glColor3f(1.0f,0.42f,0.42f);
     glBegin(GL_QUADS);
-        glVertex2f(player.posx - 20 ,player.posy    );
-        glVertex2f(player.posx + 20 ,player.posy    );
-        glVertex2f(player.posx + 20 ,player.posy+70);
-        glVertex2f(player.posx - 20 ,player.posy+70);
+        glVertex2f(player.posx - 20 ,player.posy + player.vely * catchup     );
+        glVertex2f(player.posx + 20 ,player.posy + player.vely * catchup     );
+        glVertex2f(player.posx + 20 ,player.posy + player.vely * catchup +70);
+        glVertex2f(player.posx - 20 ,player.posy + player.vely * catchup +70);
     glEnd();
 }
 
 Game::~Game() {
 
+}
+
+void Game::ongui() {
+    if(ImGui::Button("Reset Player")){
+        player.posx = 40;
+        player.posy = 290;
+        player.vely = 0;
+    }
 }
 
 Player::Player(float x, float y) {
@@ -61,15 +70,16 @@ void Player::jump() {
     if(jumping)
         return;
     jumping = true;
-    vely = 15;
+    vely = 800;
 }
 
 void Player::update(float timestep, const std::vector<Platform>& platforms) {
+    vely -= 1600.0f * timestep;
     if(vely < 0){
         for(const Platform& p : platforms){
             if(p.y > posy)
                 continue;
-            if(p.y < posy + vely)
+            if(p.y < posy + vely * timestep)
                 break;
             if(p.x > posx + 20 || p.x + p.w < posx - 20)
                 continue;
@@ -78,6 +88,5 @@ void Player::update(float timestep, const std::vector<Platform>& platforms) {
             vely = 0;
         }
     }
-    posy += vely;
-    vely -= 0.5f;
+    posy += vely * timestep;
 }

@@ -4,6 +4,13 @@ project(JumpAndRun)
 set(CMAKE_CXX_STANDARD 17)
 
 add_library(glad "libs/glad/src/glad.c")
+add_library(imgui
+        "libs/imgui/imgui.cpp"
+        "libs/imgui/imgui_demo.cpp"
+        "libs/imgui/imgui_draw.cpp"
+        "libs/imgui/imgui_widgets.cpp"
+        "libs/imgui/examples/imgui_impl_glfw.cpp"
+        "libs/imgui/examples/imgui_impl_opengl3.cpp")
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -16,6 +23,7 @@ include_directories(include)
 include_directories(libs/glad/include)
 include_directories(libs/glfw/include)
 include_directories(libs/glm/glm)
+include_directories(libs/imgui)
 
 file(GLOB all_SRCS "src/*.cpp")
 
@@ -23,3 +31,4 @@ add_executable(JumpAndRun main.cpp ${all_SRCS})
 
 target_link_libraries(JumpAndRun glfw)
 target_link_libraries(JumpAndRun glad)
+target_link_libraries(JumpAndRun imgui)

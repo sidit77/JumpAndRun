@@ -1,6 +1,9 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <examples/imgui_impl_opengl3.h>
+#include <examples/imgui_impl_glfw.h>
 #include "game.h"
 
 void error_callback(int error, const char* description) {
@@ -30,7 +33,17 @@ int main() {
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-    glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
+    glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
+    //glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_CULL_FACE);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 450");
+
 
     {
         jnr::Game game;
@@ -42,7 +55,7 @@ int main() {
         while (!glfwWindowShouldClose(window)){
             while (glfwGetTime() - lastupdate > 1.0 / timestep) {
                 lastupdate += 1.0 / timestep;
-                game.update(speed * (float)(1.0f / timestep), window);
+                game.update(speed * (1.0f / (float)timestep), window);
             }
 
             {
@@ -55,12 +68,25 @@ int main() {
                 glViewport(0, 0, display_w, display_h);
             }
 
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT
 
-            game.render();
 
+            game.render((glfwGetTime() - lastupdate));
+
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            {
+                ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+                ImGui::SliderInt("timestep", &timestep, 1, 300);
+                ImGui::SliderFloat("speed", &speed, 0, 3);
+                //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+                game.ongui();
+            }
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glfwSwapBuffers(window);
-
             glfwPollEvents();
         }
     }

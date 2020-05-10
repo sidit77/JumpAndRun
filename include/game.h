@@ -26,7 +26,8 @@ namespace jnr {
         Game();
         ~Game();
         void update(float timestep, GLFWwindow*);
-        void render();
+        void render(float catchup);
+        void ongui();
     };
 }
 
