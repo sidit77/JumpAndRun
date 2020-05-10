@@ -2,6 +2,9 @@
 
 #include <vector>
 #include <GLFW/glfw3.h>
+#include <glm.hpp>
+
+using namespace glm;
 
 namespace jnr {
 
@@ -11,10 +14,13 @@ namespace jnr {
 
     class Player {
     public:
-        float posx, posy, vely;
-        bool jumping;
+        vec2 pos;
+        vec2 vel;
+        vec2 force;
+        bool inair;
         Player(float x, float y);
         void jump();
+        void move(float dir);
         void update(float timestep, const std::vector<Platform>&);
     };
 

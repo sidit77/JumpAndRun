@@ -6,12 +6,12 @@
 using namespace jnr;
 
 Game::Game() : player(20, 290), platforms() {
-    platforms.push_back(Platform{40 , 60 , 200, 30});
+    platforms.push_back(Platform{40 , 60 , 800, 30});
     platforms.push_back(Platform{60 , 500, 200, 30});
     platforms.push_back(Platform{200, 350, 200, 30});
     platforms.push_back(Platform{300, 200, 200, 30});
     platforms.push_back(Platform{400, 600, 200, 30});
-    platforms.push_back(Platform{600, 70 , 200, 30});
+    platforms.push_back(Platform{600, 100, 200, 30});
     platforms.push_back(Platform{650, 270, 200, 30});
     platforms.push_back(Platform{900, 400, 200, 30});
     platforms.push_back(Platform{920, 100, 200, 30});
@@ -19,12 +19,30 @@ Game::Game() : player(20, 290), platforms() {
 }
 
 void Game::update(float timestep, GLFWwindow* window) {
+
+    vec2 mv(0,0);
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        player.posx -= 300 * timestep;
+        mv.x -= 1.0f;
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        player.posx += 300 * timestep;
+        mv.x += 1.0f;
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        mv.y += 1.0f;
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        mv.y -= 1.0f;
+    player.move(mv.x);
+
     if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         player.jump();
+
+    static bool bp;
+    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        if (!bp) {
+            player.vel += 1000.0f * mv;
+            bp = true;
+        }
+    } else {
+        bp = false;
+    }
     player.update(timestep, platforms);
 }
 
@@ -40,10 +58,10 @@ void Game::render(float catchup) {
     glEnd();
     glColor3f(1.0f,0.42f,0.42f);
     glBegin(GL_QUADS);
-        glVertex2f(player.posx - 20 ,player.posy + player.vely * catchup     );
-        glVertex2f(player.posx + 20 ,player.posy + player.vely * catchup     );
-        glVertex2f(player.posx + 20 ,player.posy + player.vely * catchup +70);
-        glVertex2f(player.posx - 20 ,player.posy + player.vely * catchup +70);
+        glVertex2f(player.pos.x + player.vel.x * catchup - 20 ,player.pos.y + player.vel.y * catchup     );
+        glVertex2f(player.pos.x + player.vel.x * catchup + 20 ,player.pos.y + player.vel.y * catchup     );
+        glVertex2f(player.pos.x + player.vel.x * catchup + 20 ,player.pos.y + player.vel.y * catchup +70);
+        glVertex2f(player.pos.x + player.vel.x * catchup - 20 ,player.pos.y + player.vel.y * catchup +70);
     glEnd();
 }
 
@@ -53,40 +71,53 @@ Game::~Game() {
 
 void Game::ongui() {
     if(ImGui::Button("Reset Player")){
-        player.posx = 40;
-        player.posy = 290;
-        player.vely = 0;
+        player.pos = vec2(40, 290);
+        player.vel = vec2(0,0);
+        player.force = vec2(0,0);
     }
+    ImGui::Text("x-vel: %f", player.vel.x);
 }
 
 Player::Player(float x, float y) {
-    posx = x;
-    posy = y;
-    vely = 0;
-    jumping = false;
+    pos = vec2(x,y);
+    vel = vec2(0,0);
+    force = vec2(0,0);
+    inair = false;
 }
 
 void Player::jump() {
-    if(jumping)
+    if(inair)
         return;
-    jumping = true;
-    vely = 800;
+    vel.y = 800;
 }
 
 void Player::update(float timestep, const std::vector<Platform>& platforms) {
-    vely -= 1600.0f * timestep;
-    if(vely < 0){
+    if(!inair && abs(force.x) < 10)
+        vel.x += -vel.x * 7.0f * timestep;
+    vel += force * timestep;
+    if(abs(vel.x) < 1)
+        vel.x = 0;
+    inair = true;
+    if(vel.y < 0){
         for(const Platform& p : platforms){
-            if(p.y > posy)
+            if(p.y > pos.y)
                 continue;
-            if(p.y < posy + vely * timestep)
+            if(p.y < pos.y + vel.y * timestep)
                 break;
-            if(p.x > posx + 20 || p.x + p.w < posx - 20)
+            if(p.x > pos.x + 20 || p.x + p.w < pos.x - 20)
                 continue;
-            jumping = false;
-            posy = p.y;
-            vely = 0;
+            inair = false;
+            pos.y = p.y;
+            vel.y = 0;
         }
     }
-    posy += vely * timestep;
+    pos += vel * timestep;
+    force = vec2(0, -1600);
+    //force += -vel * 0.2f;
+}
+
+void Player::move(float dir) {
+    const float tv = 400;
+    float cvp = 1.0f - fmin((vel.x * dir) / tv, 1.0f);
+    force.x += 3000 * dir * cvp;
 }
