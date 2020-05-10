@@ -18,6 +18,7 @@ namespace jnr {
         vec2 vel;
         vec2 force;
         bool inair;
+        bool jumping;
         Player(float x, float y);
         void jump();
         void move(float dir);

@@ -86,9 +86,10 @@ Player::Player(float x, float y) {
 }
 
 void Player::jump() {
+    jumping = true;
     if(inair)
         return;
-    vel.y = 800;
+    vel.y = 700;
 }
 
 void Player::update(float timestep, const std::vector<Platform>& platforms) {
@@ -98,6 +99,13 @@ void Player::update(float timestep, const std::vector<Platform>& platforms) {
     if(abs(vel.x) < 1)
         vel.x = 0;
     inair = true;
+    force = vec2(0, -1200);
+    if(vel.y < 0){
+        force *= 2.0f;
+    } else if (!jumping){
+        force *= 2.0f;
+    }
+    jumping = false;
     if(vel.y < 0){
         for(const Platform& p : platforms){
             if(p.y > pos.y)
@@ -112,7 +120,7 @@ void Player::update(float timestep, const std::vector<Platform>& platforms) {
         }
     }
     pos += vel * timestep;
-    force = vec2(0, -1600);
+
     //force += -vel * 0.2f;
 }
 
