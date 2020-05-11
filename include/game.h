@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
 #include "player.h"
+#include "physics.h"
 
 using namespace glm;
 
@@ -11,7 +12,7 @@ namespace jnr {
 
     class Game {
     private:
-        std::vector<Platform> platforms;
+        std::vector<AABB> platforms;
         Player player;
     public:
         Game();

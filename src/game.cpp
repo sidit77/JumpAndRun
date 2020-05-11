@@ -5,17 +5,23 @@
 
 using namespace jnr;
 
-Game::Game() : player(20, 290), platforms() {
-    platforms.push_back(Platform{40 , 60 , 800, 30});
-    platforms.push_back(Platform{60 , 500, 200, 30});
-    platforms.push_back(Platform{200, 350, 200, 30});
-    platforms.push_back(Platform{300, 200, 200, 30});
-    platforms.push_back(Platform{400, 600, 200, 30});
-    platforms.push_back(Platform{600, 100, 200, 30});
-    platforms.push_back(Platform{650, 270, 200, 30});
-    platforms.push_back(Platform{900, 400, 200, 30});
-    platforms.push_back(Platform{920, 100, 200, 30});
-    sort(platforms.begin( ), platforms.end( ), [ ]( const Platform& lhs, const Platform& rhs ){ return lhs.y > rhs.y;});
+AABB getPlatform(float x, float y, float w, float h){
+    return AABB{vec2(x,y), vec2(x+w,y+h)};
+}
+
+Game::Game() : player(50, 290), platforms() {
+    platforms.push_back(getPlatform(0   , 0  , 1200, 10 ));
+    platforms.push_back(getPlatform(1190, 10 , 10  , 700));
+    platforms.push_back(getPlatform(0   , 10 , 10  , 700));
+    platforms.push_back(getPlatform(60  , 500, 200 , 30 ));
+    platforms.push_back(getPlatform(200 , 350, 200 , 30 ));
+    platforms.push_back(getPlatform(300 , 200, 200 , 30 ));
+    platforms.push_back(getPlatform(400 , 600, 200 , 30 ));
+    platforms.push_back(getPlatform(600 , 100, 200 , 30 ));
+    platforms.push_back(getPlatform(650 , 270, 200 , 30 ));
+    platforms.push_back(getPlatform(900 , 400, 200 , 30 ));
+    platforms.push_back(getPlatform(920 , 100, 200 , 30 ));
+    //sort(platforms.begin( ), platforms.end( ), [ ]( const Platform& lhs, const Platform& rhs ){ return lhs.y > rhs.y;});
 }
 
 void Game::update(float timestep, GLFWwindow* window) {
@@ -49,19 +55,19 @@ void Game::update(float timestep, GLFWwindow* window) {
 void Game::render(float catchup) {
     glColor3f(0.0,0.43,0.67f);
     glBegin(GL_QUADS);
-    for(const Platform& p : platforms){
-        glVertex2f(p.x    ,p.y    );
-        glVertex2f(p.x+p.w,p.y    );
-        glVertex2f(p.x+p.w,p.y-p.h);
-        glVertex2f(p.x    ,p.y-p.h);
+    for(const AABB& p : platforms){
+        glVertex2f(p.low .x ,p.low .y);
+        glVertex2f(p.high.x ,p.low .y);
+        glVertex2f(p.high.x ,p.high.y);
+        glVertex2f(p.low .x ,p.high.y);
     }
     glEnd();
     glColor3f(1.0f,0.42f,0.42f);
     glBegin(GL_QUADS);
-        glVertex2f(player.pos.x + player.vel.x * catchup - 20 ,player.pos.y + player.vel.y * catchup     );
-        glVertex2f(player.pos.x + player.vel.x * catchup + 20 ,player.pos.y + player.vel.y * catchup     );
-        glVertex2f(player.pos.x + player.vel.x * catchup + 20 ,player.pos.y + player.vel.y * catchup +70);
-        glVertex2f(player.pos.x + player.vel.x * catchup - 20 ,player.pos.y + player.vel.y * catchup +70);
+        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y);
+        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y);
+        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y);
+        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y);
     glEnd();
 }
 
@@ -75,6 +81,6 @@ void Game::ongui() {
         player.vel = vec2(0,0);
         player.force = vec2(0,0);
     }
-    ImGui::Text("x-vel: %f", player.vel.x);
+    ImGui::Text("vel: [%f,%f]", player.vel.x, player.vel.y);
 }
 
