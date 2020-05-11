@@ -6,3 +6,4 @@
 -[x] horizontal sleep
 -[ ] use callbacks for jump
 -[ ] save jump input when not on ground
+-[ ] fix getting stuck on corners

@@ -52,15 +52,18 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
         force *= short_jump_factor;
     }
     jumping = false;
-    CollisionInfo info = jnr::checkSweptAABB(pos, vel * timestep, hitbox, platforms);
-    if(info.valid){
-        pos += vel * timestep * info.time;
-        float remainingtime = 1.0f - info.time;
-        float dp = (vel.x * info.normal.y + vel.y * info.normal.x);
-        vel = vec2(info.normal.y, info.normal.x) * dp;
-        pos += vel * timestep * remainingtime;
-    } else {
-        pos += vel * timestep;
+    float remainingtime = 1.0f;
+    for(int i = 0; i < 5 && remainingtime > 0.05f; i++) {
+        CollisionInfo info = jnr::checkSweptAABB(pos, vel * timestep * remainingtime, hitbox, platforms);
+        if (info.valid) {
+            pos += vel * timestep * info.time;
+            remainingtime -= info.time;
+            float dp = (vel.x * info.normal.y + vel.y * info.normal.x);
+            vel = vec2(info.normal.y, info.normal.x) * dp;
+        } else {
+            pos += vel * timestep;
+            remainingtime = 0;
+        }
     }
     inair = !jnr::checkAABB(pos, foot_hitbox, platforms);
     //if(vel.y < 0){
