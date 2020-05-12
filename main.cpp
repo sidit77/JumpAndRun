@@ -48,6 +48,7 @@ int main() {
     {
         jnr::Game game;
 
+        bool movint = true;
         double lastupdate = glfwGetTime();
         int timestep = 60;
         float speed = 1;
@@ -71,7 +72,7 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT
 
 
-            game.render((glfwGetTime() - lastupdate));
+            game.render((glfwGetTime() - lastupdate) * (movint ? 1 : 0));
 
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
@@ -80,6 +81,7 @@ int main() {
                 ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
                 ImGui::SliderInt("timestep", &timestep, 1, 300);
                 ImGui::SliderFloat("speed", &speed, 0, 3);
+                ImGui::Checkbox("mov. pred.", &movint);
                 //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
                 game.ongui();

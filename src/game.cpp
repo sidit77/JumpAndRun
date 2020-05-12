@@ -37,8 +37,7 @@ void Game::update(float timestep, GLFWwindow* window) {
         mv.y -= 1.0f;
     player.move(mv.x);
 
-    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        player.jump();
+    player.jump(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
 
     static bool bp;
     if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {

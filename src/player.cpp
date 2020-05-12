@@ -8,7 +8,7 @@ const float jump_impulse = 700;
 
 const float gravity = -1200;
 const float fall_factor = 2.0f;
-const float short_jump_factor = 2.0f;
+const float short_jump_factor = 3.0f;
 
 const float max_speed = 400;
 const float ground_friction = 7;
@@ -18,25 +18,43 @@ const float air_friction = 1;
 const float air_acceleration = 2000;
 const float air_reactivity_factor = 0.8f;
 
-Player::Player(float x, float y) : hitbox{vec2(-20,0),vec2(20,70)}, foot_hitbox{vec2(-19, -1), vec2(19,1)} {
+Player::Player(float x, float y) :
+    hitbox{vec2(-20,0),vec2(20,70)},
+    foot_hitbox{vec2(-19, -1), vec2(19,1)},
+    l_arm_hitbox{vec2(-21,10),vec2(-19,60)},
+    r_arm_hitbox{vec2(19,10),vec2(21,60)}{
     pos = vec2(x,y);
     vel = vec2(0,0);
     force = vec2(0,0);
     inair = false;
 }
 
-void Player::jump() {
-    jumping = true;
-    if(inair)
+void Player::jump(bool jump) {
+    if(!jump || jumping){
+        jumping = jump;
         return;
-    vel.y += jump_impulse;
+    }
+    jumping = true;
+    if(!inair)
+        vel.y = jump_impulse;
+    else if(onwall)
+        vel = vec2((onwall & 1U ? 1 : -1) * 0.7, 1) * jump_impulse;
 }
 
 void Player::update(float timestep, const std::vector<AABB>& platforms) {
-    if(abs(force.x) < 10)
-        vel.x -= fabsmin(vel.x * (inair ? air_friction : ground_friction) * timestep, vel.x);
+
+    onwall = 0;
+    if(jnr::checkAABB(pos, l_arm_hitbox, platforms))
+        onwall |= 1U;
+    if(jnr::checkAABB(pos, r_arm_hitbox, platforms))
+        onwall |= 2U;
+
+    if(vel.y < 0 && ((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)))
+        vel.y -= fabsmin(vel.y * 16 * timestep, vel.y);
     vel.y += force.y * timestep;
 
+    if(abs(force.x) < 10)
+        vel.x -= fabsmin(vel.x * (inair ? air_friction : ground_friction) * timestep, vel.x);
     if(abs(vel.x + force.x * timestep) <= fmax(max_speed, abs(vel.x)))
         vel.x += force.x * timestep;
     else if(abs(vel.x) < max_speed)
@@ -51,7 +69,7 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
     } else if (!jumping){
         force *= short_jump_factor;
     }
-    jumping = false;
+    //jumping = false;
     float remainingtime = 1.0f;
     for(int i = 0; i < 5 && remainingtime > 0.05f; i++) {
         CollisionInfo info = jnr::checkSweptAABB(pos, vel * timestep * remainingtime, hitbox, platforms);
@@ -66,6 +84,7 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
         }
     }
     inair = !jnr::checkAABB(pos, foot_hitbox, platforms);
+
     //if(vel.y < 0){
     //    for(const Platform& p : platforms){
     //        if(p.y > pos.y)
