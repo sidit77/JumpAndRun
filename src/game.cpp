@@ -1,6 +1,6 @@
 #include <glad/glad.h>
 #include <algorithm>
-#include <game.h>
+#include "game.h"
 #include <imgui.h>
 
 using namespace jnr;
@@ -9,7 +9,13 @@ AABB getPlatform(float x, float y, float w, float h){
     return AABB{vec2(x,y), vec2(x+w,y+h)};
 }
 
-Game::Game() : player(50, 290), platforms() {
+Game::Game() :
+    player(50, 290),
+    platforms(),
+    program{{"res/shader/character_vertex.glsl", GL_VERTEX_SHADER},{"res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER}},
+    vao(),
+    vbo()
+{
     platforms.push_back(getPlatform(0   , 0  , 1200, 10 ));
     platforms.push_back(getPlatform(1190, 10 , 10  , 700));
     platforms.push_back(getPlatform(0   , 10 , 10  , 700));
@@ -21,7 +27,19 @@ Game::Game() : player(50, 290), platforms() {
     platforms.push_back(getPlatform(650 , 270, 200 , 30 ));
     platforms.push_back(getPlatform(900 , 400, 200 , 30 ));
     platforms.push_back(getPlatform(920 , 100, 200 , 30 ));
-    //sort(platforms.begin( ), platforms.end( ), [ ]( const Platform& lhs, const Platform& rhs ){ return lhs.y > rhs.y;});
+
+    float vertices[] = {
+            -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            0.0f,  0.5f, 0.0f
+    };
+
+    vao.bind();
+    vbo.bind(GL_ARRAY_BUFFER);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
 }
 
 void Game::update(float timestep, GLFWwindow* window) {
@@ -52,6 +70,11 @@ void Game::update(float timestep, GLFWwindow* window) {
 }
 
 void Game::render(float catchup) {
+    program.bind();
+    vao.bind();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glUseProgram(0);
+
     glColor3f(0.0,0.43,0.67f);
     glBegin(GL_QUADS);
     for(const AABB& p : platforms){
@@ -68,10 +91,10 @@ void Game::render(float catchup) {
         glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y);
         glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y);
     glEnd();
+
 }
 
 Game::~Game() {
-
 }
 
 void Game::ongui() {

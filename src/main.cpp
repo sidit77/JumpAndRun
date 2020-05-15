@@ -5,7 +5,7 @@
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
 #include "game.h"
-#include <ResourceManager/ResourceHandle.h>
+
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
@@ -13,8 +13,6 @@ void error_callback(int error, const char* description) {
 
 int main() {
     GLFWwindow* window;
-
-    ResourceHandle rh("res/shader/character_vertex.glsl");
 
     if (!glfwInit())
         return -1;

@@ -5,6 +5,8 @@
 #include <glm.hpp>
 #include "player.h"
 #include "physics.h"
+#include "opengl/shader.h"
+#include "opengl/buffer.h"
 
 using namespace glm;
 
@@ -14,6 +16,9 @@ namespace jnr {
     private:
         std::vector<AABB> platforms;
         Player player;
+        opengl::VertexBuffer vbo;
+        opengl::VertexArray vao;
+        opengl::Program program;
     public:
         Game();
         ~Game();

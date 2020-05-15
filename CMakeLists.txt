@@ -20,14 +20,13 @@ set(GLFW_USE_HYBRID_HPG ON CACHE BOOL "" FORCE)
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/resourcemanager)
 
-include_directories(include)
 include_directories(libs/resourcemanager/include)
 include_directories(libs/glad/include)
 include_directories(libs/glfw/include)
 include_directories(libs/glm/glm)
 include_directories(libs/imgui)
 
-file(GLOB all_SRCS "src/*.cpp")
+file(GLOB_RECURSE all_SRCS "src/*.cpp")
 file(GLOB_RECURSE all_RES "res/*.*" )
 
 foreach(P IN LISTS all_RES)
@@ -37,7 +36,7 @@ endforeach()
 
 rm_embed_resources(RESOURCES ${all_RES_rel})
 
-add_executable(JumpAndRun main.cpp ${all_SRCS} ${RESOURCES})
+add_executable(JumpAndRun ${all_SRCS} ${RESOURCES})
 
 target_link_libraries(JumpAndRun glfw)
 target_link_libraries(JumpAndRun glad)
