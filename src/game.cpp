@@ -1,9 +1,11 @@
-#include <glad/glad.h>
+#include <glbinding/gl/gl.h>
 #include <algorithm>
 #include "game.h"
 #include <imgui.h>
 
 using namespace jnr;
+using namespace gl;
+using namespace glm;
 
 AABB getPlatform(float x, float y, float w, float h){
     return AABB{vec2(x,y), vec2(x+w,y+h)};
@@ -37,7 +39,7 @@ Game::Game() :
     vao.bind();
     vbo.bind(GL_ARRAY_BUFFER);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, static_cast<gl::GLenum>(GL_FLOAT), GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
 }

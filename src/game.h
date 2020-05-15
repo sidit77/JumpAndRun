@@ -8,7 +8,7 @@
 #include "opengl/shader.h"
 #include "opengl/buffer.h"
 
-using namespace glm;
+
 
 namespace jnr {
 

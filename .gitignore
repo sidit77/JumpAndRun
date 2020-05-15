@@ -4,3 +4,4 @@ cmake-build-minggw-debug
 .idea
 build/
 compile.sh
+/libs/glbinding/source/glbinding/include/glbinding/ContextHandle.h

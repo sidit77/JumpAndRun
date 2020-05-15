@@ -14,3 +14,7 @@
 	path = libs/resourcemanager
 	url = https://github.com/Johnnyborov/ResourceManager.git
 	branch = master
+[submodule "glbinding"]
+	path = libs/glbinding
+	url = https://github.com/cginternals/glbinding.git
+	branch = v3.2

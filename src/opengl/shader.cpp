@@ -2,6 +2,8 @@
 #include <iostream>
 #include <ResourceManager/ResourceHandle.h>
 
+using namespace gl;
+
 jnr::opengl::Shader::Shader(const std::string& path, GLenum type) : id(glCreateShader(type)) {
     ResourceHandle handle(path);
     if(!handle.isValid()){

@@ -1,5 +1,7 @@
 #include "buffer.h"
 
+using namespace gl;
+
 jnr::opengl::VertexBuffer::VertexBuffer(){
     glCreateBuffers(1, &id);
 }
