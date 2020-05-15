@@ -10,3 +10,7 @@
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = master
+[submodule "resourcemanager"]
+	path = libs/resourcemanager
+	url = https://github.com/Johnnyborov/ResourceManager.git
+	branch = master

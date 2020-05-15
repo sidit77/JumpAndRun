@@ -71,7 +71,8 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
     }
     //jumping = false;
     float remainingtime = 1.0f;
-    for(int i = 0; i < 5 && remainingtime > 0.05f; i++) {
+    //std::cout << "start";
+    for(int i = 0; i < 10 && remainingtime > 0.05f; i++) {
         CollisionInfo info = jnr::checkSweptAABB(pos, vel * timestep * remainingtime, hitbox, platforms);
         if (info.valid) {
             pos += vel * timestep * info.time;
@@ -81,8 +82,10 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
         } else {
             pos += vel * timestep;
             remainingtime = 0;
+            //std::cout << " found in " << (i+1) << " steps";
         }
     }
+    //std::cout << std::endl;
     inair = !jnr::checkAABB(pos, foot_hitbox, platforms);
 
     //if(vel.y < 0){

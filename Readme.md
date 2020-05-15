@@ -8,3 +8,4 @@
 * save jump input when not on ground
 * fix getting stuck on corners
 * fix physics bug
+* short lockout after walljump?
