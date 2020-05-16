@@ -22,6 +22,7 @@ namespace jnr::opengl {
         Program(std::initializer_list<std::shared_ptr<Shader>> shaders);
         ~Program();
         void bind();
+        GLuint getUniformLocation(std::string name);
     };
 
 }

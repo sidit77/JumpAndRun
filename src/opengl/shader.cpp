@@ -45,3 +45,7 @@ jnr::opengl::Program::~Program() {
 void jnr::opengl::Program::bind() {
     glUseProgram(id);
 }
+
+GLuint jnr::opengl::Program::getUniformLocation(std::string name) {
+    return glGetUniformLocation(id, name.c_str());
+}

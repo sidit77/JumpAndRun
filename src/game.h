@@ -15,8 +15,8 @@ namespace jnr {
         std::vector<AABB> platforms;
         Camera cam;
         Player player;
-        opengl::VertexBuffer vbo;
-        opengl::VertexArray vao;
+        opengl::VertexBuffer staticvbo;
+        opengl::VertexArray staticvao;
         opengl::Program program;
     public:
         Game();
