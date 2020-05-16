@@ -69,7 +69,7 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT
 
             double delta = glfwGetTime() - lastframe;
-            game.render(delta,(glfwGetTime() - lastupdate) * (movint ? 1 : 0), screensize);
+            game.render(speed * delta,speed * (glfwGetTime() - lastupdate) * (movint ? 1 : 0), screensize);
             lastframe += delta;
 
             ImGui_ImplOpenGL3_NewFrame();
