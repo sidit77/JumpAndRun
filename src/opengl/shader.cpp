@@ -24,9 +24,9 @@ jnr::opengl::Shader::~Shader() {
     glDeleteShader(id);
 }
 
-jnr::opengl::Program::Program(std::initializer_list<Shader> shaders) : id(glCreateProgram()) {
-    for(auto shader : shaders){
-        glAttachShader(id, shader.id);
+jnr::opengl::Program::Program(std::initializer_list<std::shared_ptr<Shader>> shaders) : id(glCreateProgram()) {
+    for(const auto& shader : shaders){
+        glAttachShader(id, shader->id);
     }
     glLinkProgram(id);
     int success;

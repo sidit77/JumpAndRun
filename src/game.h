@@ -2,13 +2,10 @@
 
 #include <vector>
 #include <GLFW/glfw3.h>
-#include <glm.hpp>
 #include "player.h"
 #include "physics.h"
 #include "opengl/shader.h"
 #include "opengl/buffer.h"
-
-using namespace glm;
 
 namespace jnr {
 

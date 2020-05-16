@@ -3,6 +3,7 @@
 #include "mixed.h"
 
 using namespace jnr;
+using namespace glm;
 
 const float jump_impulse = 700;
 

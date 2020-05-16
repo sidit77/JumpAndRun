@@ -5,16 +5,14 @@
 #include <vector>
 #include "physics.h"
 
-using namespace glm;
-
 namespace jnr {
     class Player {
     public:
-        vec2 pos{};
-        vec2 vel{};
-        vec2 force{};
+        glm::vec2 pos{};
+        glm::vec2 vel{};
+        glm::vec2 force{};
         bool inair;
-        uint8  onwall;
+        uint8_t  onwall;
         bool jumping{};
         AABB hitbox;
         AABB foot_hitbox;

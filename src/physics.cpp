@@ -4,16 +4,17 @@
 #include <gtx/string_cast.hpp>
 
 using namespace jnr;
+using namespace glm;
 
 inline AABB move(AABB bb, vec2 pos){
-    AABB result;
+    AABB result{};
     result.low = bb.low + pos;
     result.high = bb.high + pos;
     return result;
 }
 
 inline AABB getBroadphaseAABB(vec2 vel, AABB bb){
-    AABB result;
+    AABB result{};
     result.low = bb.low + min(vel, vec2(0,0));
     result.high = bb.high + max(vel, vec2(0,0));
     return result;

@@ -4,6 +4,7 @@
 #include <imgui.h>
 
 using namespace jnr;
+using namespace glm;
 
 AABB getPlatform(float x, float y, float w, float h){
     return AABB{vec2(x,y), vec2(x+w,y+h)};
@@ -12,7 +13,7 @@ AABB getPlatform(float x, float y, float w, float h){
 Game::Game() :
     player(50, 290),
     platforms(),
-    program{{"res/shader/character_vertex.glsl", GL_VERTEX_SHADER},{"res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER}},
+    program{std::make_shared<opengl::Shader>("res/shader/character_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<opengl::Shader>("res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER)},
     vao(),
     vbo()
 {

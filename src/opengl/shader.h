@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <utility>
 #include <string>
+#include <memory>
 
 namespace jnr::opengl {
 
@@ -18,7 +19,7 @@ namespace jnr::opengl {
     private:
         GLint id;
     public:
-        Program(std::initializer_list<Shader> shaders);
+        Program(std::initializer_list<std::shared_ptr<Shader>> shaders);
         ~Program();
         void bind();
     };
