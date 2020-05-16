@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glbinding/gl/gl.h>
+#include <glad/glad.h>
 #include <initializer_list>
 #include <utility>
 #include <string>
@@ -9,14 +9,14 @@ namespace jnr::opengl {
 
     class Shader{
     public:
-        gl::GLint id;
-        Shader(const std::string&, gl::GLenum);
+        GLint id;
+        Shader(const std::string&, GLenum);
         ~Shader();
     };
 
     class Program{
     private:
-        gl::GLint id;
+        GLint id;
     public:
         Program(std::initializer_list<Shader> shaders);
         ~Program();

@@ -1,19 +1,19 @@
 #pragma once
 
-#include <glbinding/gl/gl.h>
+#include <glad/glad.h>
 
 namespace jnr::opengl {
     class VertexBuffer {
     public:
-        gl::GLuint id;
+        GLuint id;
         VertexBuffer();
         ~VertexBuffer();
-        void bind(gl::GLenum target);
+        void bind(GLenum target);
     };
 
     class VertexArray {
     public:
-        gl::GLuint id;
+        GLuint id;
         VertexArray();
         ~VertexArray();
         void bind();

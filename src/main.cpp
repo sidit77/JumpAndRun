@@ -1,14 +1,11 @@
-//#include <glad/glad.h>
-#include <glbinding/glbinding.h>
-#include <glbinding/gl/gl.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
 #include "game.h"
 
-using namespace gl;
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
@@ -35,7 +32,7 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
-    glbinding::initialize(glfwGetProcAddress, false);
+    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
     //glEnable(GL_DEPTH_TEST);
