@@ -1,7 +1,7 @@
 #include <glad/glad.h>
-#include <algorithm>
 #include "game.h"
 #include <imgui.h>
+#include <iostream>
 
 using namespace jnr;
 using namespace glm;
@@ -11,6 +11,7 @@ AABB getPlatform(float x, float y, float w, float h){
 }
 
 Game::Game() :
+    cam(),
     player(50, 290),
     platforms(),
     program{std::make_shared<opengl::Shader>("res/shader/character_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<opengl::Shader>("res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER)},
@@ -70,11 +71,21 @@ void Game::update(float timestep, GLFWwindow* window) {
     player.update(timestep, platforms);
 }
 
-void Game::render(float catchup) {
+
+void Game::render(float delta, float catchup, glm::ivec2 screensize) {
+    cam.aspect = (float)screensize.x / screensize.y;
+    cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
+    cam.update();
+
     program.bind();
     vao.bind();
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glUseProgram(0);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(cam.position.x - (cam.scale * cam.aspect), cam.position.x + (cam.scale * cam.aspect), cam.position.y - cam.scale, cam.position.y + cam.scale, -1.0f, 1.0f);
+    glMatrixMode(GL_MODELVIEW);
 
     glColor3f(0.0,0.43,0.67f);
     glBegin(GL_QUADS);

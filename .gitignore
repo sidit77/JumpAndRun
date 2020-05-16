@@ -1,6 +1,8 @@
 cmake-build-debug
 cmake-build-release
 cmake-build-minggw-debug
+cmake-build-minggwdebug/
 .idea
 build/
 compile.sh
+

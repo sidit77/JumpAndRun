@@ -33,6 +33,7 @@ int main() {
 
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+    glfwSwapInterval(1);
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
     //glEnable(GL_DEPTH_TEST);
@@ -51,6 +52,7 @@ int main() {
 
         bool movint = true;
         double lastupdate = glfwGetTime();
+        double lastframe = glfwGetTime();
         int timestep = 60;
         float speed = 1;
 
@@ -60,20 +62,15 @@ int main() {
                 game.update(speed * (1.0f / (float)timestep), window);
             }
 
-            {
-                int display_w, display_h;
-                glfwGetFramebufferSize(window, &display_w, &display_h);
-                glMatrixMode(GL_PROJECTION);
-                glLoadIdentity();
-                glOrtho(0, display_w, 0, display_h, 1, -1);
-                glMatrixMode(GL_MODELVIEW);
-                glViewport(0, 0, display_w, display_h);
-            }
+            glm::ivec2 screensize;
+            glfwGetFramebufferSize(window, &screensize.x, &screensize.y);
+            glViewport(0, 0, screensize.x, screensize.y);
 
             glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT
 
-
-            game.render((glfwGetTime() - lastupdate) * (movint ? 1 : 0));
+            double delta = glfwGetTime() - lastframe;
+            game.render(delta,(glfwGetTime() - lastupdate) * (movint ? 1 : 0), screensize);
+            lastframe += delta;
 
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
