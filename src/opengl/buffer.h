@@ -7,6 +7,8 @@ namespace jnr::opengl {
     public:
         GLuint id;
         VertexBuffer();
+        VertexBuffer(const VertexBuffer &) = delete;
+        VertexBuffer &operator=(const VertexBuffer &) = delete;
         ~VertexBuffer();
         void bind(GLenum target);
     };
@@ -16,6 +18,8 @@ namespace jnr::opengl {
         GLuint id;
         VertexArray();
         ~VertexArray();
+        VertexArray(const VertexArray &) = delete;
+        VertexArray &operator=(const VertexArray &) = delete;
         void bind();
     };
 

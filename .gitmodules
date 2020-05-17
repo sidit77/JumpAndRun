@@ -14,3 +14,7 @@
 	path = libs/resourcemanager
 	url = https://github.com/Johnnyborov/ResourceManager.git
 	branch = master
+[submodule "creature-runtime"]
+	path = libs/creature-runtime
+	url = https://github.com/kestrelm/Creature_Cocos2DX.git
+	branch = master
