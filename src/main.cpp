@@ -36,8 +36,12 @@ int main() {
     glfwSwapInterval(1);
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
-    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthFunc(GL_LEQUAL);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -66,7 +70,7 @@ int main() {
             glfwGetFramebufferSize(window, &screensize.x, &screensize.y);
             glViewport(0, 0, screensize.x, screensize.y);
 
-            glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT
+            glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT); //
 
             double delta = glfwGetTime() - lastframe;
             game.render(speed * delta,speed * (glfwGetTime() - lastupdate) * (movint ? 1 : 0), screensize);

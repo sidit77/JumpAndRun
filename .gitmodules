@@ -18,3 +18,7 @@
 	path = libs/creature-runtime
 	url = https://github.com/kestrelm/Creature_Cocos2DX.git
 	branch = master
+[submodule "stb"]
+	path = libs/stb
+	url = https://github.com/nothings/stb.git
+	branch = master

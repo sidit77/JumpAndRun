@@ -2,7 +2,10 @@
 #include "game.h"
 #include <imgui.h>
 #include <iostream>
+#include <memory>
 #include <gtc/type_ptr.hpp>
+#include <MeshBone.h>
+
 
 using namespace jnr;
 using namespace glm;
@@ -17,7 +20,10 @@ Game::Game() :
         platforms(),
         program{std::make_shared<opengl::Shader>("res/shader/platform_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<opengl::Shader>("res/shader/platform_fragment.glsl", GL_FRAGMENT_SHADER)},
         staticvao(),
-        staticvbo()
+        staticvbo(),
+        creature_vao(),
+        creature_pos(), creature_tex(), creature_ind(), creature_col(),
+        creature_program{std::make_shared<opengl::Shader>("res/shader/character_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<opengl::Shader>("res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER)}
 {
     platforms.push_back(getPlatform(0   , 0  , 1200, 10 ));
     platforms.push_back(getPlatform(1190, 10 , 10  , 700));
@@ -31,27 +37,59 @@ Game::Game() :
     platforms.push_back(getPlatform(900 , 400, 200 , 30 ));
     platforms.push_back(getPlatform(920 , 100, 200 , 30 ));
 
-    std::vector<vec2> vertices = {
-            vec2(-0.5f, -0.5f),
-            vec2( 0.5f, -0.5f),
-            vec2( 0.0f,  0.5f),
+    std::vector<vec3> vertices = {
+            vec3(-0.5f, -0.5f, 0.7f),
+            vec3( 0.5f, -0.5f, 0.7f),
+            vec3( 0.0f,  0.5f, 0.7f),
     };
 
     for(auto plat : platforms){
-        vertices.emplace_back(plat.low .x, plat.low .y);
-        vertices.emplace_back(plat.high.x, plat.low .y);
-        vertices.emplace_back(plat.high.x, plat.high.y);
-        vertices.emplace_back(plat.high.x, plat.high.y);
-        vertices.emplace_back(plat.low .x, plat.high.y);
-        vertices.emplace_back(plat.low .x, plat.low .y);
+        vertices.emplace_back(plat.low .x, plat.low .y, 0.0f);
+        vertices.emplace_back(plat.high.x, plat.low .y, 0.0f);
+        vertices.emplace_back(plat.high.x, plat.high.y, 0.0f);
+        vertices.emplace_back(plat.high.x, plat.high.y, 0.0f);
+        vertices.emplace_back(plat.low .x, plat.high.y, 0.0f);
+        vertices.emplace_back(plat.low .x, plat.low .y, 0.0f);
     }
 
     staticvao.bind();
     staticvbo.bind(GL_ARRAY_BUFFER);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec2), vertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), vertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    CreatureModule::CreatureLoadDataPacket json_data;
+    CreatureModule::LoadCreatureJSONData("assets/character/swapGirl.json", json_data);
+    creature_texture = std::make_unique<opengl::Texture>("assets/character/swapGirl.png");
+
+    auto cur_creature = std::make_shared<CreatureModule::Creature>(json_data);
+
+
+    creature_manager = std::make_unique<CreatureModule::CreatureManager>(cur_creature);
+    creature_manager->CreateAnimation(json_data, "default");
+    //creature_manager->CreateAnimation(json_data, "second");
+    creature_manager->SetActiveAnimationName("default");
+    creature_manager->SetIsPlaying(true);
+
+    creature_vao.bind();
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    creature_pos.bind(GL_ARRAY_BUFFER);
+    glBufferData(GL_ARRAY_BUFFER, creature_manager->GetCreature()->GetTotalNumPoints() * 3 * sizeof(glm::float32), creature_manager->GetCreature()->GetGlobalPts(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(glm::float32), (void*)0);
+
+    creature_col.bind(GL_ARRAY_BUFFER);
+    glBufferData(GL_ARRAY_BUFFER, creature_manager->GetCreature()->GetTotalNumPoints() * 5 * sizeof(uint8_t), creature_manager->GetCreature()->GetRenderColours(), GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4 * sizeof(uint8_t), (void*)0);
+
+    creature_tex.bind(GL_ARRAY_BUFFER);
+    glBufferData(GL_ARRAY_BUFFER, creature_manager->GetCreature()->GetTotalNumPoints() * 2 * sizeof(glm::float32), creature_manager->GetCreature()->GetGlobalUvs(), GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::float32), (void*)0);
+
+    creature_ind.bind(GL_ELEMENT_ARRAY_BUFFER);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, creature_manager->GetCreature()->GetTotalNumIndices() * sizeof(uint32), creature_manager->GetCreature()->GetGlobalIndices(), GL_STATIC_DRAW);
 }
 
 void Game::update(float timestep, GLFWwindow* window) {
@@ -66,6 +104,9 @@ void Game::update(float timestep, GLFWwindow* window) {
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         mv.y -= 1.0f;
     player.move(mv.x);
+
+    if(mv.x != 0)
+        creature_manager->SetMirrorY(mv.x > 0);
 
     player.jump(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
 
@@ -87,8 +128,6 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
     cam.update();
 
-    mat4 id(1.0f);
-
     program.bind();
     staticvao.bind();
     glUniform3f(program.getUniformLocation("color"), 1.0f, 0.5f, 0.7f);
@@ -98,7 +137,7 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     glUniform3f(program.getUniformLocation("color"), 0.0f, 0.43f, 0.67f);
     glUniformMatrix4fv(program.getUniformLocation("cam"), 1, false, glm::value_ptr(cam.matrix));
     glDrawArrays(GL_TRIANGLES, 3, 6 * platforms.size());
-
+    glBindVertexArray(0);
     glUseProgram(0);
 
     glMatrixMode(GL_PROJECTION);
@@ -106,13 +145,26 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     glOrtho(cam.position.x - (cam.scale * cam.aspect), cam.position.x + (cam.scale * cam.aspect), cam.position.y - cam.scale, cam.position.y + cam.scale, -1.0f, 1.0f);
     glMatrixMode(GL_MODELVIEW);
 
-    glColor3f(1.0f,0.42f,0.42f);
-    glBegin(GL_QUADS);
-        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y);
-        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y);
-        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y);
-        glVertex2f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y);
-    glEnd();
+    //glColor3f(1.0f,0.42f,0.42f);
+    //glBegin(GL_QUADS);
+    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y, 0.3f);
+    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y, 0.3f);
+    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
+    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
+    //glEnd();
+
+    creature_vao.bind();
+    creature_manager->Update(delta);
+    creature_manager->GetCreature()->FillRenderColours(255,255,255,255);
+    creature_program.bind();
+    creature_texture->bind(GL_TEXTURE_2D, GL_TEXTURE0);
+    glUniformMatrix4fv(creature_program.getUniformLocation("cam"), 1, false, glm::value_ptr(cam.matrix));
+    glUniform2f(creature_program.getUniformLocation("pos"), player.pos.x + player.vel.x * catchup, player.pos.y + player.vel.y * catchup+ 25);
+    glUniform1f(creature_program.getUniformLocation("scale"), 4);
+    glNamedBufferData(creature_pos.id, creature_manager->GetCreature()->GetTotalNumPoints() * 3 * sizeof(glm::float32), creature_manager->GetCreature()->GetRenderPts(), GL_STREAM_DRAW);
+    glNamedBufferData(creature_col.id, creature_manager->GetCreature()->GetTotalNumPoints() * 4 * sizeof(uint8_t), creature_manager->GetCreature()->GetRenderColours(), GL_STREAM_DRAW);
+    creature_ind.bind(GL_ELEMENT_ARRAY_BUFFER);
+    glDrawElements(GL_TRIANGLES, creature_manager->GetCreature()->GetTotalNumIndices(), GL_UNSIGNED_INT, 0);
 
 }
 
