@@ -102,26 +102,6 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
         force *= short_jump_factor;
     }
 
-    //std::cout << std::endl;
-
-
-    //if(vel.y < 0){
-    //    for(const Platform& p : platforms){
-    //        if(p.y > pos.y)
-    //            continue;
-    //        if(p.y < pos.y + vel.y * timestep)
-    //            break;
-    //        if(p.x > pos.x + 20 || p.x + p.w < pos.x - 20)
-    //            continue;
-    //        inair = false;
-    //        pos.y = p.y;
-    //        vel.y = 0;
-    //    }
-    //}
-
-
-
-    //force += -vel * 0.2f;
 }
 
 void Player::move(float dir) {
@@ -130,8 +110,6 @@ void Player::move(float dir) {
     if(dir * vel.x < 0.0)
         base *= (inair ? air_reactivity_factor : ground_reactivity_factor);
 
-    //const float tv = 400;
-    //float cvp = 1.0f - fmin((vel.x * dir) / tv, 1.0f);
     force.x += base;
 }
 

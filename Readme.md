@@ -6,6 +6,6 @@
 * ~~horizontal sleep~~
 * use callbacks for jump
 * save jump input when not on ground
-* fix getting stuck on corners
-* fix physics bug
+* ~~fix getting stuck on corners~~
+* ~~fix physics bug~~
 * short lockout after walljump?

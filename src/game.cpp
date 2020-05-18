@@ -25,7 +25,7 @@ Game::Game() :
         creature_pos(), creature_tex(), creature_ind(), creature_col(),
         creature_program{std::make_shared<opengl::Shader>("res/shader/character_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<opengl::Shader>("res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER)}
 {
-    platforms.push_back(getPlatform(0   , 0  , 1500, 1 ));
+    platforms.push_back(getPlatform(0   , 0  , 1500, 10 ));
     platforms.push_back(getPlatform(1490, 10 , 10  , 700));
     platforms.push_back(getPlatform(0   , 10 , 10  , 700));
     platforms.push_back(getPlatform(60  , 500, 200 , 30 ));
@@ -36,6 +36,8 @@ Game::Game() :
     platforms.push_back(getPlatform(650 , 270, 200 , 30 ));
     platforms.push_back(getPlatform(900 , 400, 200 , 30 ));
     platforms.push_back(getPlatform(920 , 100, 200 , 30 ));
+    platforms.push_back(getPlatform(1200   , 200  , 150, 30 ));
+    platforms.push_back(getPlatform(1340   , 300  , 10, 400 ));
 
     std::vector<vec3> vertices = {
             vec3(-0.5f, -0.5f, 0.7f),
