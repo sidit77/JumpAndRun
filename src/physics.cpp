@@ -2,6 +2,7 @@
 #include <limits>
 #include <algorithm>
 #include <gtx/string_cast.hpp>
+#include <iostream>
 
 using namespace jnr;
 using namespace glm;
@@ -54,7 +55,7 @@ CollisionInfo getSweptAABB(AABB bb1, vec2 vel, AABB bb2){
 
     if (vel.y == 0.0f){
         Entry.y = -std::numeric_limits<float>::infinity();
-        Exit .y = std::numeric_limits<float>::infinity();
+        Exit .y =  std::numeric_limits<float>::infinity();
     }else{
         Entry.y = InvEntry.y / vel.y;
         Exit .y = InvExit .y / vel.y;
@@ -63,32 +64,18 @@ CollisionInfo getSweptAABB(AABB bb1, vec2 vel, AABB bb2){
     float entryTime = std::max(Entry.x, Entry.y);
     float exitTime  = std::min(Exit .x, Exit .y);
     CollisionInfo result{};
+    result.time = entryTime;
 
-    if (entryTime > exitTime || (Entry.x < 0.0f && Entry.y < 0.0f) || Entry.x > 1.0f || Entry.y > 1.0f){
+    if (entryTime > exitTime || entryTime < 0.0f || entryTime > 1.0f){
         result.valid = false;
     }else {
         result.valid = true;
-        result.time = entryTime;
         if (Entry.x > Entry.y){
-            if (InvEntry.x < 0.0f){
-                result.normal.x = 1.0f;
-                result.normal.y = 0.0f;
-                result.face = RIGHT;
-            }else{
-                result.normal.x = -1.0f;
-                result.normal.y = 0.0f;
-                result.face = LEFT;
-            }
+            result.normal = sign(vel) * vec2(-1,0);
+            result.position = (vel.x > 0) ? bb2.low.x : bb2.high.x;
         }else{
-            if (InvEntry.y < 0.0f){
-                result.normal.x = 0.0f;
-                result.normal.y = 1.0f;
-                result.face = UP;
-            }else{
-                result.normal.x = 0.0f;
-                result.normal.y = -1.0f;
-                result.face = DOWN;
-            }
+            result.normal = sign(vel) * vec2(0, -1);
+            result.position = (vel.y > 0) ? bb2.low.y : bb2.high.y;
         }
     }
     return result;
@@ -98,15 +85,20 @@ CollisionInfo jnr::checkSweptAABB(vec2 pos, vec2 vel, AABB bb, const std::vector
     AABB pbb = move(bb, pos);
     AABB full = getBroadphaseAABB(vel, pbb);
     CollisionInfo info{};
-    info.time = 2.0f;
+    info.time = std::numeric_limits<float>::infinity();
+    info.position = 0;
     info.valid = false;
+    float wt = info.time;
     for(const AABB& sbb : staticbb){
         if(AABBCheck(full, sbb)){
             CollisionInfo ninfo = getSweptAABB(pbb, vel, sbb);
-            if(ninfo.valid && ninfo.time < info.time)
+            wt = min(wt, ninfo.time);
+            if(ninfo.valid  && ninfo.time < info.time)
                 info = ninfo;
         }
     }
+    if(!info.valid)
+        info.time = wt;
     return info;
 }
 

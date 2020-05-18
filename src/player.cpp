@@ -1,6 +1,8 @@
 #include <iostream>
 #include "player.h"
 #include "mixed.h"
+#include <gtx/string_cast.hpp>
+#include <limits>
 
 using namespace jnr;
 using namespace glm;
@@ -40,10 +42,46 @@ void Player::jump(bool jump) {
         vel.y = jump_impulse;
     else if(onwall)
         vel = vec2((onwall & 1U ? 1 : -1) * 0.7, 1) * jump_impulse;
+    else
+        return;
+    force.y = 0;
+    //std::cout << "jump" << std::endl;
 }
 
 void Player::update(float timestep, const std::vector<AABB>& platforms) {
 
+    vel.y += force.y * timestep;
+    if(abs(vel.x + force.x * timestep) <= fmax(max_speed, abs(vel.x)))
+        vel.x += force.x * timestep;
+    else if(abs(vel.x) < max_speed)
+        vel.x = clamp(vel.x + force.x * timestep, -max_speed, max_speed);
+
+    //jumping = false;
+    float remainingtime = timestep;
+    //std::cout << "start (" << to_string(vel) << ")";
+    for(int i = 0; i < 10 && remainingtime > timestep * 0.05f; i++) {
+        CollisionInfo info = jnr::checkSweptAABB(pos, vel * remainingtime, hitbox, platforms);
+        if (info.valid) {
+            //pos += info.normal * info.depth;
+            pos += vel * remainingtime * info.time;
+            if(info.normal.x != 0){
+                pos.x = info.position - mix(hitbox.low.x, hitbox.high.x, (-info.normal.x + 1) * 0.5f);
+            } else {
+                pos.y = info.position - mix(hitbox.low.y, hitbox.high.y, (-info.normal.y + 1) * 0.5f);
+            }
+            remainingtime *= (1-info.time);
+            float dp = (vel.x * info.normal.y + vel.y * info.normal.x);
+            vel = vec2(info.normal.y, info.normal.x) * dp;
+            //std::cout << " > [" << info.time << ", " << info.position << ", " << to_string(info.normal) << ", " << to_string(vel) << "]";
+        } else {
+            pos += vel * remainingtime;
+            remainingtime = 0;
+            //std::cout << " > end(" << to_string(pos) << ")";
+        }
+    }
+    //std::cout << " > result(" << jnr::checkAABB(pos, hitbox, platforms) << ")" << std::endl;
+
+    inair = !jnr::checkAABB(pos, foot_hitbox, platforms);
     onwall = 0;
     if(jnr::checkAABB(pos, l_arm_hitbox, platforms))
         onwall |= 1U;
@@ -52,15 +90,8 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
 
     if(vel.y < 0 && ((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)))
         vel.y -= fabsmin(vel.y * 16 * timestep, vel.y);
-    vel.y += force.y * timestep;
-
     if(abs(force.x) < 10)
         vel.x -= fabsmin(vel.x * (inair ? air_friction : ground_friction) * timestep, vel.x);
-    if(abs(vel.x + force.x * timestep) <= fmax(max_speed, abs(vel.x)))
-        vel.x += force.x * timestep;
-    else if(abs(vel.x) < max_speed)
-        vel.x = clamp(vel.x + force.x * timestep, -max_speed, max_speed);
-
     if(abs(vel.x) < 1)
         vel.x = 0;
 
@@ -70,24 +101,9 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
     } else if (!jumping){
         force *= short_jump_factor;
     }
-    //jumping = false;
-    float remainingtime = 1.0f;
-    //std::cout << "start";
-    for(int i = 0; i < 10 && remainingtime > 0.05f; i++) {
-        CollisionInfo info = jnr::checkSweptAABB(pos, vel * timestep * remainingtime, hitbox, platforms);
-        if (info.valid) {
-            pos += vel * timestep * info.time;
-            remainingtime -= info.time;
-            float dp = (vel.x * info.normal.y + vel.y * info.normal.x);
-            vel = vec2(info.normal.y, info.normal.x) * dp;
-        } else {
-            pos += vel * timestep;
-            remainingtime = 0;
-            //std::cout << " found in " << (i+1) << " steps";
-        }
-    }
+
     //std::cout << std::endl;
-    inair = !jnr::checkAABB(pos, foot_hitbox, platforms);
+
 
     //if(vel.y < 0){
     //    for(const Platform& p : platforms){

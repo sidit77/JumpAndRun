@@ -19,6 +19,7 @@ namespace jnr {
         glm::vec2 normal;
         float time;
         bool valid;
+        float position;
     };
 
     CollisionInfo checkSweptAABB(glm::vec2 pos, glm::vec2 vel, AABB bb, const std::vector<AABB>& staticbb);
