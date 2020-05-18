@@ -25,7 +25,10 @@ int main() {
 
     glfwSetErrorCallback(error_callback);
 
-    window = glfwCreateWindow(1280, 720, "Jump And Run", NULL, NULL);
+    int vsync = 1;
+    bool fullscreen = false;
+    int spbackup[4];
+    window = glfwCreateWindow(1280, 720, "Jump And Run", fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -83,15 +86,33 @@ int main() {
                 ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
                 ImGui::SliderInt("timestep", &timestep, 1, 300);
                 ImGui::SliderFloat("speed", &speed, 0, 3);
+                ImGui::Checkbox("Fullscreen", &fullscreen);
+                ImGui::SliderInt("Vsync", &vsync, 0, 8);
                 ImGui::Checkbox("mov. pred.", &movint);
                 //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
                 game.ongui();
+
+
             }
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+            glfwSwapInterval(vsync);
             glfwSwapBuffers(window);
             glfwPollEvents();
+
+            if((glfwGetWindowMonitor(window) != NULL) != fullscreen){
+                GLFWmonitor* monitor = glfwGetPrimaryMonitor();//;
+                const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+                if(fullscreen) {
+                    glfwGetWindowPos(window, &spbackup[0], &spbackup[1]);
+                    glfwGetWindowSize(window, &spbackup[2], &spbackup[3]);
+                    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
+                } else {
+                    glfwSetWindowMonitor(window, NULL, spbackup[0], spbackup[1], spbackup[2], spbackup[3], GLFW_DONT_CARE);
+                }
+            }
         }
     }
 

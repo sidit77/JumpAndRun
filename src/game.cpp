@@ -59,16 +59,16 @@ Game::Game() :
     glEnableVertexAttribArray(0);
 
     CreatureModule::CreatureLoadDataPacket json_data;
-    CreatureModule::LoadCreatureJSONData("assets/character/swapGirl.json", json_data);
-    creature_texture = std::make_unique<opengl::Texture>("assets/character/swapGirl.png");
+    CreatureModule::LoadCreatureJSONData("assets/character/death_data.json", json_data);
+    creature_texture = std::make_unique<opengl::Texture>("assets/character/death_atlas.png");
 
     auto cur_creature = std::make_shared<CreatureModule::Creature>(json_data);
 
 
     creature_manager = std::make_unique<CreatureModule::CreatureManager>(cur_creature);
-    creature_manager->CreateAnimation(json_data, "default");
+    creature_manager->CreateAnimation(json_data, "Idle");
     //creature_manager->CreateAnimation(json_data, "second");
-    creature_manager->SetActiveAnimationName("default");
+    creature_manager->SetActiveAnimationName("Idle");
     creature_manager->SetIsPlaying(true);
 
     creature_vao.bind();
@@ -106,7 +106,7 @@ void Game::update(float timestep, GLFWwindow* window) {
     player.move(mv.x);
 
     if(mv.x != 0)
-        creature_manager->SetMirrorY(mv.x > 0);
+        creature_manager->SetMirrorY(mv.x < 0);
 
     player.jump(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
 
@@ -145,13 +145,19 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     glOrtho(cam.position.x - (cam.scale * cam.aspect), cam.position.x + (cam.scale * cam.aspect), cam.position.y - cam.scale, cam.position.y + cam.scale, -1.0f, 1.0f);
     glMatrixMode(GL_MODELVIEW);
 
-    //glColor3f(1.0f,0.42f,0.42f);
-    //glBegin(GL_QUADS);
-    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y, 0.3f);
-    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.low .y, 0.3f);
-    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
-    //    glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low .x ,player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
-    //glEnd();
+    if(showphitbox) {
+        glColor3f(1.0f, 0.42f, 0.42f);
+        glBegin(GL_QUADS);
+        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low.x,
+                   player.pos.y + player.vel.y * catchup + player.hitbox.low.y, 0.3f);
+        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x,
+                   player.pos.y + player.vel.y * catchup + player.hitbox.low.y, 0.3f);
+        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x,
+                   player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
+        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low.x,
+                   player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
+        glEnd();
+    }
 
     creature_vao.bind();
     creature_manager->Update(delta);
@@ -159,8 +165,10 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     creature_program.bind();
     creature_texture->bind(GL_TEXTURE_2D, GL_TEXTURE0);
     glUniformMatrix4fv(creature_program.getUniformLocation("cam"), 1, false, glm::value_ptr(cam.matrix));
-    glUniform2f(creature_program.getUniformLocation("pos"), player.pos.x + player.vel.x * catchup, player.pos.y + player.vel.y * catchup+ 25);
-    glUniform1f(creature_program.getUniformLocation("scale"), 4);
+    //glUniform2f(creature_program.getUniformLocation("pos"), player.pos.x + player.vel.x * catchup, player.pos.y + player.vel.y * catchup+ 25);
+    //glUniform1f(creature_program.getUniformLocation("scale"), 4);
+    glUniform2f(creature_program.getUniformLocation("pos"), player.pos.x + player.vel.x * catchup, player.pos.y + player.vel.y * catchup - 12);
+    glUniform1f(creature_program.getUniformLocation("scale"), 14);
     glNamedBufferData(creature_pos.id, creature_manager->GetCreature()->GetTotalNumPoints() * 3 * sizeof(glm::float32), creature_manager->GetCreature()->GetRenderPts(), GL_STREAM_DRAW);
     glNamedBufferData(creature_col.id, creature_manager->GetCreature()->GetTotalNumPoints() * 4 * sizeof(uint8_t), creature_manager->GetCreature()->GetRenderColours(), GL_STREAM_DRAW);
     creature_ind.bind(GL_ELEMENT_ARRAY_BUFFER);
@@ -178,6 +186,7 @@ void Game::ongui() {
         player.force = vec2(0,0);
         cam.position = vec2(0,0);
     }
+    ImGui::Checkbox("Show Hitbox", &showphitbox);
     ImGui::Text("vel: [%.2f,%.2f]", player.vel.x, player.vel.y);
 }
 

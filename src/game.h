@@ -25,6 +25,7 @@ namespace jnr {
         opengl::VertexBuffer staticvbo;
         opengl::VertexArray staticvao;
         opengl::Program program;
+        bool showphitbox = false;
     public:
         Game();
         ~Game();
