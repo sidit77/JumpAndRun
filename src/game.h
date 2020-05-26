@@ -9,16 +9,14 @@
 #include "rendering/opengl/shader.h"
 #include "rendering/opengl/buffer.h"
 #include "rendering/opengl/texture.h"
+#include "rendering/creature_renderer.h"
 
 namespace jnr {
 
     class Game {
     private:
         std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
-        Program creature_program;
-        VertexArray creature_vao;
-        VertexBuffer creature_pos, creature_col, creature_tex, creature_ind;
-        std::unique_ptr<Texture> creature_texture;
+        std::unique_ptr<CreatureRenderer> creature_renderer;
         std::vector<AABB> platforms;
         Camera cam;
         Player player;

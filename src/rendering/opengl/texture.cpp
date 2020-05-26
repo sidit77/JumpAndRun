@@ -10,7 +10,7 @@ Texture::Texture() {
     glGenTextures(1, &id);
 }
 
-Texture::Texture(std::string path) : Texture() {
+Texture::Texture(const std::string& path) : Texture() {
     glBindTexture(GL_TEXTURE_2D, id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

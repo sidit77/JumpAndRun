@@ -6,9 +6,9 @@
 namespace jnr{
     class Texture {
     public:
-        GLuint id;
+        GLuint id{};
         Texture();
-        Texture(std::string path);
+        Texture(const std::string& path);
         Texture(const Texture &) = delete;
         Texture &operator=(const Texture &) = delete;
         ~Texture();
