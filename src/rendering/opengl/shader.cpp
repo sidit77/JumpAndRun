@@ -48,6 +48,6 @@ void Program::bind() {
     glUseProgram(id);
 }
 
-GLuint Program::getUniformLocation(std::string name) {
+GLint Program::getUniformLocation(const std::string& name) {
     return glGetUniformLocation(id, name.c_str());
 }

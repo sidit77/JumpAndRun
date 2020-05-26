@@ -10,7 +10,7 @@ namespace jnr {
 
     class Shader{
     public:
-        GLint id;
+        GLuint id;
         Shader(const std::string&, GLenum);
         Shader(const Shader &) = delete;
         Shader &operator=(const Shader &) = delete;
@@ -19,14 +19,14 @@ namespace jnr {
 
     class Program{
     private:
-        GLint id;
+        GLuint id;
     public:
         Program(std::initializer_list<std::shared_ptr<Shader>> shaders);
         Program(const Program &) = delete;
         Program &operator=(const Program &) = delete;
         ~Program();
         void bind();
-        GLuint getUniformLocation(std::string name);
+        GLint getUniformLocation(const std::string& name);
     };
 
 }

@@ -1,7 +1,6 @@
 #include <iostream>
 #include "player.h"
 #include "mixed.h"
-#include <gtx/string_cast.hpp>
 #include <limits>
 
 using namespace jnr;

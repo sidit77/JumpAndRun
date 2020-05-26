@@ -108,11 +108,11 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     program.bind();
     staticvao.bind();
     glUniform3f(program.getUniformLocation("color"), 1.0f, 0.5f, 0.7f);
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, false, glm::value_ptr(mat4(1.0f)));
+    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glUniform3f(program.getUniformLocation("color"), 0.0f, 0.43f, 0.67f);
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, false, glm::value_ptr(cam.matrix));
+    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
     glDrawArrays(GL_TRIANGLES, 3, 6 * platforms.size());
     glBindVertexArray(0);
     glUseProgram(0);

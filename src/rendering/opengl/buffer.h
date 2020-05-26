@@ -5,7 +5,7 @@
 namespace jnr {
     class VertexBuffer {
     public:
-        GLuint id;
+        GLuint id{};
         VertexBuffer();
         VertexBuffer(const VertexBuffer &) = delete;
         VertexBuffer &operator=(const VertexBuffer &) = delete;
@@ -15,7 +15,7 @@ namespace jnr {
 
     class VertexArray {
     public:
-        GLuint id;
+        GLuint id{};
         VertexArray();
         ~VertexArray();
         VertexArray(const VertexArray &) = delete;
