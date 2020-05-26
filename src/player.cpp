@@ -13,6 +13,7 @@ const float fall_factor = 2.0f;
 const float short_jump_factor = 3.0f;
 
 const float max_speed = 400;
+const float wall_slide_friction = 16;
 const float ground_friction = 7;
 const float ground_acceleration = 1600;
 const float ground_reactivity_factor = 3;
@@ -88,7 +89,7 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
         onwall |= 2U;
 
     if(vel.y < 0 && ((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)))
-        vel.y -= fabsmin(vel.y * 16 * timestep, vel.y);
+        vel.y -= fabsmin(vel.y * wall_slide_friction * timestep, vel.y);
     if(abs(force.x) < 10)
         vel.x -= fabsmin(vel.x * (inair ? air_friction : ground_friction) * timestep, vel.x);
     if(abs(vel.x) < 1)

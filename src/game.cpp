@@ -57,14 +57,15 @@ Game::Game() :
     glEnableVertexAttribArray(0);
 
     CreatureModule::CreatureLoadDataPacket json_data;
-    CreatureModule::LoadCreatureJSONData("assets/character/death_data.json", json_data);
+    CreatureModule::LoadCreatureJSONData("assets/character/character_data.json", json_data);
     auto cur_creature = std::make_shared<CreatureModule::Creature>(json_data);
 
-    creature_renderer = std::make_unique<CreatureRenderer>(cur_creature, "assets/character/death_atlas.png");
+    creature_renderer = std::make_unique<CreatureRenderer>(cur_creature, "assets/character/character_atlas.png");
     creature_manager = std::make_unique<CreatureModule::CreatureManager>(cur_creature);
+    creature_manager->CreateAnimation(json_data, "Running");
     creature_manager->CreateAnimation(json_data, "Idle");
-    //creature_manager->CreateAnimation(json_data, "second");
     creature_manager->SetActiveAnimationName("Idle");
+    creature_manager->SetAutoBlending(true);
     creature_manager->SetIsPlaying(true);
 
 }
@@ -136,10 +137,15 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
         glEnd();
     }
 
+    if(abs(player.vel.x) > 30){
+        creature_manager->AutoBlendTo("Running", delta * 10);
+    }else{
+        creature_manager->AutoBlendTo("Idle", delta * 10);
+    }
 
     creature_manager->Update(delta);
     creature_manager->GetCreature()->FillRenderColours(255,255,255,255);
-    creature_renderer->draw(player.pos + player.vel * catchup + vec2(0, -12), 14, cam);
+    creature_renderer->draw(player.pos + player.vel * catchup, 17, cam);
 
 }
 
