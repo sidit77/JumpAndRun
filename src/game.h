@@ -5,26 +5,26 @@
 #include <CreatureModule.h>
 #include "player.h"
 #include "physics.h"
-#include "camera.h"
-#include "opengl/shader.h"
-#include "opengl/buffer.h"
-#include "opengl/texture.h"
+#include "rendering/camera.h"
+#include "rendering/opengl/shader.h"
+#include "rendering/opengl/buffer.h"
+#include "rendering/opengl/texture.h"
 
 namespace jnr {
 
     class Game {
     private:
         std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
-        opengl::Program creature_program;
-        opengl::VertexArray creature_vao;
-        opengl::VertexBuffer creature_pos, creature_col, creature_tex, creature_ind;
-        std::unique_ptr<opengl::Texture> creature_texture;
+        Program creature_program;
+        VertexArray creature_vao;
+        VertexBuffer creature_pos, creature_col, creature_tex, creature_ind;
+        std::unique_ptr<Texture> creature_texture;
         std::vector<AABB> platforms;
         Camera cam;
         Player player;
-        opengl::VertexBuffer staticvbo;
-        opengl::VertexArray staticvao;
-        opengl::Program program;
+        VertexBuffer staticvbo;
+        VertexArray staticvao;
+        Program program;
         bool showphitbox = false;
     public:
         Game();
@@ -33,6 +33,7 @@ namespace jnr {
         void render(float delta, float catchup, glm::ivec2 screensize);
         void ongui();
     };
+
 }
 
 

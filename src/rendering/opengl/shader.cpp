@@ -2,7 +2,9 @@
 #include <iostream>
 #include <ResourceManager/ResourceHandle.h>
 
-jnr::opengl::Shader::Shader(const std::string& path, GLenum type) : id(glCreateShader(type)) {
+using namespace jnr;
+
+Shader::Shader(const std::string& path, GLenum type) : id(glCreateShader(type)) {
     ResourceHandle handle(path);
     if(!handle.isValid()){
         std::cerr << path << " is not a resource!" << std::endl;
@@ -20,11 +22,11 @@ jnr::opengl::Shader::Shader(const std::string& path, GLenum type) : id(glCreateS
     }
 }
 
-jnr::opengl::Shader::~Shader() {
+Shader::~Shader() {
     glDeleteShader(id);
 }
 
-jnr::opengl::Program::Program(std::initializer_list<std::shared_ptr<Shader>> shaders) : id(glCreateProgram()) {
+Program::Program(std::initializer_list<std::shared_ptr<Shader>> shaders) : id(glCreateProgram()) {
     for(const auto& shader : shaders){
         glAttachShader(id, shader->id);
     }
@@ -38,14 +40,14 @@ jnr::opengl::Program::Program(std::initializer_list<std::shared_ptr<Shader>> sha
     }
 }
 
-jnr::opengl::Program::~Program() {
+Program::~Program() {
     glDeleteProgram(id);
 }
 
-void jnr::opengl::Program::bind() {
+void Program::bind() {
     glUseProgram(id);
 }
 
-GLuint jnr::opengl::Program::getUniformLocation(std::string name) {
+GLuint Program::getUniformLocation(std::string name) {
     return glGetUniformLocation(id, name.c_str());
 }

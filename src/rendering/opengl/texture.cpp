@@ -4,11 +4,13 @@
 #include <stb_image.h>
 #include <iostream>
 
-jnr::opengl::Texture::Texture() {
+using namespace jnr;
+
+Texture::Texture() {
     glGenTextures(1, &id);
 }
 
-jnr::opengl::Texture::Texture(std::string path) : Texture() {
+Texture::Texture(std::string path) : Texture() {
     glBindTexture(GL_TEXTURE_2D, id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -25,11 +27,11 @@ jnr::opengl::Texture::Texture(std::string path) : Texture() {
     stbi_image_free(data);
 }
 
-jnr::opengl::Texture::~Texture() {
+Texture::~Texture() {
     glDeleteTextures(1, &id);
 }
 
-void jnr::opengl::Texture::bind(GLenum target, GLenum slot) {
+void Texture::bind(GLenum target, GLenum slot) {
     glActiveTexture(slot);
     glBindTexture(target, id);
 }

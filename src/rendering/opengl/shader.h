@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace jnr::opengl {
+namespace jnr {
 
     class Shader{
     public:

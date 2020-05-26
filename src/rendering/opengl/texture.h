@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <string>
 
-namespace jnr::opengl{
+namespace jnr{
     class Texture {
     public:
         GLuint id;

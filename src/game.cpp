@@ -18,12 +18,12 @@ Game::Game() :
         cam(),
         player(50, 290),
         platforms(),
-        program{std::make_shared<opengl::Shader>("res/shader/platform_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<opengl::Shader>("res/shader/platform_fragment.glsl", GL_FRAGMENT_SHADER)},
+        program{std::make_shared<Shader>("res/shader/platform_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<Shader>("res/shader/platform_fragment.glsl", GL_FRAGMENT_SHADER)},
         staticvao(),
         staticvbo(),
         creature_vao(),
         creature_pos(), creature_tex(), creature_ind(), creature_col(),
-        creature_program{std::make_shared<opengl::Shader>("res/shader/character_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<opengl::Shader>("res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER)}
+        creature_program{std::make_shared<Shader>("res/shader/character_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<Shader>("res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER)}
 {
     platforms.push_back(getPlatform(0   , 0  , 1500, 10 ));
     platforms.push_back(getPlatform(1490, 10 , 10  , 700));
@@ -62,7 +62,7 @@ Game::Game() :
 
     CreatureModule::CreatureLoadDataPacket json_data;
     CreatureModule::LoadCreatureJSONData("assets/character/death_data.json", json_data);
-    creature_texture = std::make_unique<opengl::Texture>("assets/character/death_atlas.png");
+    creature_texture = std::make_unique<Texture>("assets/character/death_atlas.png");
 
     auto cur_creature = std::make_shared<CreatureModule::Creature>(json_data);
 

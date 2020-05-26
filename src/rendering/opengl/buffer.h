@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-namespace jnr::opengl {
+namespace jnr {
     class VertexBuffer {
     public:
         GLuint id;
