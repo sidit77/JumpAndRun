@@ -30,6 +30,7 @@ namespace jnr::playerstates::states {
     State falling    {3, "Falling",(StateTraits::IN_AIR | StateTraits::FALLING)};
     State short_jump {4, "Jumping",StateTraits::IN_AIR};
     State wall_slide {5, "Sliding",StateTraits::NONE};
+    State idle       {6, "Idle",StateTraits::CAN_JUMP};
 }
 
 Player::Player(float x, float y) :
@@ -46,6 +47,10 @@ Player::Player(float x, float y) :
 
 
 void Player::update(float timestep, Input input, const std::vector<AABB>& platforms) {
+    statetime += timestep;
+    if(*state == states::still && statetime > 2)
+        setState(&states::idle);
+
 
     force = vec2(0, gravity);
     if(all(state->traits, StateTraits::FALLING))
@@ -60,17 +65,17 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     force.x += base;
 
     if(!input.jump && *state == states::jumping)
-        state = &states::short_jump;
+        setState(&states::short_jump);
 
     if (input.jumpDown) {
         if(all(state->traits, StateTraits::CAN_JUMP)) {
             vel.y = jump_impulse;
             force.y = 0;
-            state = &states::jumping;
+            setState(&states::jumping);
         } else if(onwall){
             vel = vec2((onwall & 1U ? 1 : -1) * 0.7, 1) * jump_impulse;
             force.y = 0;
-            state = &states::jumping;
+            setState(&states::jumping);
         }
     }
 
@@ -104,9 +109,13 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     }
     //std::cout << " > result(" << jnr::checkAABB(pos, hitbox, platforms) << ")" << std::endl;
     if(jnr::checkAABB(pos, foot_hitbox, platforms)) {
-        state = abs(force.x) < 10 ? &states::still : &states::walking;
+        if(abs(force.x) > 10){
+            setState(&states::walking);
+        } else if(!(*state == states::idle)){
+            setState(&states::still);
+        }
     }else if(vel.y < 0)
-        state = &states::falling;
+        setState(&states::falling);
 
     onwall = 0;
     if(jnr::checkAABB(pos, l_arm_hitbox, platforms))
@@ -115,10 +124,10 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
         onwall |= 2U;
 
     if(((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)) && all(state->traits, StateTraits::FALLING))
-        state = &states::wall_slide;
+        setState(&states::wall_slide);
 
     if(*state == states::wall_slide && !((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)))
-        state = &states::falling;
+        setState(&states::falling);
 
     if(*state == states::wall_slide)
         vel.y -= fabsmin(vel.y * wall_slide_friction * timestep, vel.y);
@@ -127,5 +136,12 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     if(abs(vel.x) < 1)
         vel.x = 0;
 
+}
+
+void Player::setState(playerstates::State *s) {
+    if(*s == *state)
+        return;
+    statetime = 0;
+    state = s;
 }
 
