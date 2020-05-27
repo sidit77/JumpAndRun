@@ -13,7 +13,7 @@
 
 namespace jnr {
 
-    class Game {
+    class Game : private NonCopyable{
     private:
         std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
         std::unique_ptr<CreatureRenderer> creature_renderer;
@@ -24,6 +24,7 @@ namespace jnr {
         VertexArray staticvao;
         Program program;
         bool showphitbox = false;
+        Input lastInput;
     public:
         Game();
         ~Game();

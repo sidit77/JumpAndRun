@@ -8,7 +8,7 @@
 #include "camera.h"
 
 namespace jnr {
-    class CreatureRenderer {
+    class CreatureRenderer : private NonCopyable{
     private:
         std::shared_ptr<CreatureModule::Creature> creature;
         Program program;
@@ -18,8 +18,6 @@ namespace jnr {
     public:
         CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_ptr, const std::string& texpath);
         ~CreatureRenderer() = default;
-        CreatureRenderer(const CreatureRenderer &) = delete;
-        CreatureRenderer &operator=(const CreatureRenderer &) = delete;
         void draw(glm::vec2 pos, float scale, const Camera& camera);
     };
 }

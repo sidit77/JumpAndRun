@@ -5,25 +5,22 @@
 #include <utility>
 #include <string>
 #include <memory>
+#include "../../mixed.h"
 
 namespace jnr {
 
-    class Shader{
+    class Shader : private NonCopyable{
     public:
         GLuint id;
         Shader(const std::string&, GLenum);
-        Shader(const Shader &) = delete;
-        Shader &operator=(const Shader &) = delete;
         ~Shader();
     };
 
-    class Program{
+    class Program : private NonCopyable{
     private:
         GLuint id;
     public:
         Program(std::initializer_list<std::shared_ptr<Shader>> shaders);
-        Program(const Program &) = delete;
-        Program &operator=(const Program &) = delete;
         ~Program();
         void bind();
         GLint getUniformLocation(const std::string& name);

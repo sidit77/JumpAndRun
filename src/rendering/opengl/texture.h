@@ -2,15 +2,14 @@
 
 #include <glad/glad.h>
 #include <string>
+#include "../../mixed.h"
 
 namespace jnr{
-    class Texture {
+    class Texture : private NonCopyable{
     public:
         GLuint id{};
         Texture();
-        Texture(const std::string& path);
-        Texture(const Texture &) = delete;
-        Texture &operator=(const Texture &) = delete;
+        explicit Texture(const std::string& path);
         ~Texture();
         void bind(GLenum target, GLenum slot);
     };

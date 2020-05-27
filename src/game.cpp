@@ -19,7 +19,8 @@ Game::Game() :
         platforms(),
         program{std::make_shared<Shader>("res/shader/platform_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<Shader>("res/shader/platform_fragment.glsl", GL_FRAGMENT_SHADER)},
         staticvao(),
-        staticvbo()
+        staticvbo(),
+        lastInput()
 {
     platforms.push_back(getPlatform(0   , 0  , 1500, 10 ));
     platforms.push_back(getPlatform(1490, 10 , 10  , 700));
@@ -71,33 +72,33 @@ Game::Game() :
 }
 
 void Game::update(float timestep, GLFWwindow* window) {
-
-    vec2 mv(0,0);
+    Input input{};
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        mv.x -= 1.0f;
+        input.move.x -= 1.0f;
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        mv.x += 1.0f;
+        input.move.x += 1.0f;
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        mv.y += 1.0f;
+        input.move.y += 1.0f;
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        mv.y -= 1.0f;
-    player.move(mv.x);
+        input.move.y -= 1.0f;
 
-    if(mv.x != 0)
-        creature_manager->SetMirrorY(mv.x < 0);
+    if(input.move.x != 0)
+        creature_manager->SetMirrorY(input.move.x < 0);
 
-    player.jump(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
+    input.jump = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
+    input.jumpDown = !lastInput.jump && input.jump;
 
-    static bool bp;
-    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        if (!bp) {
-            player.vel += 1000.0f * mv;
-            bp = true;
-        }
-    } else {
-        bp = false;
-    }
-    player.update(timestep, platforms);
+    //static bool bp;
+    //if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+    //    if (!bp) {
+    //        player.vel += 1000.0f * mv;
+    //        bp = true;
+    //    }
+    //} else {
+    //    bp = false;
+    //}
+    lastInput = input;
+    player.update(timestep, input, platforms);
 }
 
 
@@ -160,5 +161,6 @@ void Game::ongui() {
     }
     ImGui::Checkbox("Show Hitbox", &showphitbox);
     ImGui::Text("vel: [%.2f,%.2f]", player.vel.x, player.vel.y);
+    ImGui::Text("state: %s", player.state->name.c_str());
 }
 

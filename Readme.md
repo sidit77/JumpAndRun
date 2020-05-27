@@ -10,6 +10,7 @@
 * ~~fix getting stuck on corners~~
 * ~~fix physics bug~~
 * short lockout after walljump?
+* Move character a bit down while running
 
 ### Engine
 #### General

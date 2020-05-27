@@ -1,25 +1,22 @@
 #pragma once
 
 #include <glad/glad.h>
+#include "../../mixed.h"
 
 namespace jnr {
-    class VertexBuffer {
+    class VertexBuffer : private NonCopyable{
     public:
         GLuint id{};
         VertexBuffer();
-        VertexBuffer(const VertexBuffer &) = delete;
-        VertexBuffer &operator=(const VertexBuffer &) = delete;
         ~VertexBuffer();
         void bind(GLenum target);
     };
 
-    class VertexArray {
+    class VertexArray : private NonCopyable{
     public:
         GLuint id{};
         VertexArray();
         ~VertexArray();
-        VertexArray(const VertexArray &) = delete;
-        VertexArray &operator=(const VertexArray &) = delete;
         void bind();
     };
 

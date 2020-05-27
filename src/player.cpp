@@ -5,6 +5,7 @@
 
 using namespace jnr;
 using namespace glm;
+using namespace playerstates;
 
 const float jump_impulse = 700;
 
@@ -13,7 +14,7 @@ const float fall_factor = 2.0f;
 const float short_jump_factor = 3.0f;
 
 const float max_speed = 400;
-const float wall_slide_friction = 16;
+const float wall_slide_friction = 12;
 const float ground_friction = 7;
 const float ground_acceleration = 1600;
 const float ground_reactivity_factor = 3;
@@ -21,34 +22,57 @@ const float air_friction = 1;
 const float air_acceleration = 2000;
 const float air_reactivity_factor = 0.8f;
 
+
+namespace jnr::playerstates::states {
+    State jumping    {0, "Jumping",StateTraits::IN_AIR};
+    State walking    {1, "Walking",StateTraits::CAN_JUMP};
+    State still      {2, "Still",StateTraits::CAN_JUMP};
+    State falling    {3, "Falling",(StateTraits::IN_AIR | StateTraits::FALLING)};
+    State short_jump {4, "Jumping",StateTraits::IN_AIR};
+    State wall_slide {5, "Sliding",StateTraits::NONE};
+}
+
 Player::Player(float x, float y) :
     hitbox{vec2(-20,0),vec2(20,70)},
     foot_hitbox{vec2(-19, -1), vec2(19,1)},
     l_arm_hitbox{vec2(-21,10),vec2(-19,60)},
-    r_arm_hitbox{vec2(19,10),vec2(21,60)}{
-    pos = vec2(x,y);
-    vel = vec2(0,0);
-    force = vec2(0,0);
-    inair = false;
+    r_arm_hitbox{vec2(19,10),vec2(21,60)},
+    pos(x,y),
+    vel(0,0),
+    force(0,0),
+    state(&states::jumping){
+
 }
 
-void Player::jump(bool jump) {
-    if(!jump || jumping){
-        jumping = jump;
-        return;
+
+void Player::update(float timestep, Input input, const std::vector<AABB>& platforms) {
+
+    force = vec2(0, gravity);
+    if(all(state->traits, StateTraits::FALLING))
+        force *= fall_factor;
+    if (*state == states::short_jump){
+        force *= short_jump_factor;
     }
-    jumping = true;
-    if(!inair)
-        vel.y = jump_impulse;
-    else if(onwall)
-        vel = vec2((onwall & 1U ? 1 : -1) * 0.7, 1) * jump_impulse;
-    else
-        return;
-    force.y = 0;
-    //std::cout << "jump" << std::endl;
-}
 
-void Player::update(float timestep, const std::vector<AABB>& platforms) {
+    float base = (all(state->traits, StateTraits::IN_AIR) ? air_acceleration : ground_acceleration) * input.move.x;
+    if(input.move.x * vel.x < 0.0)
+        base *= (all(state->traits, StateTraits::IN_AIR) ? air_reactivity_factor : ground_reactivity_factor);
+    force.x += base;
+
+    if(!input.jump && *state == states::jumping)
+        state = &states::short_jump;
+
+    if (input.jumpDown) {
+        if(all(state->traits, StateTraits::CAN_JUMP)) {
+            vel.y = jump_impulse;
+            force.y = 0;
+            state = &states::jumping;
+        } else if(onwall){
+            vel = vec2((onwall & 1U ? 1 : -1) * 0.7, 1) * jump_impulse;
+            force.y = 0;
+            state = &states::jumping;
+        }
+    }
 
     vel.y += force.y * timestep;
     if(abs(vel.x + force.x * timestep) <= fmax(max_speed, abs(vel.x)))
@@ -56,7 +80,6 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
     else if(abs(vel.x) < max_speed)
         vel.x = clamp(vel.x + force.x * timestep, -max_speed, max_speed);
 
-    //jumping = false;
     float remainingtime = timestep;
     //std::cout << "start (" << to_string(vel) << ")";
     for(int i = 0; i < 10 && remainingtime > timestep * 0.05f; i++) {
@@ -80,37 +103,29 @@ void Player::update(float timestep, const std::vector<AABB>& platforms) {
         }
     }
     //std::cout << " > result(" << jnr::checkAABB(pos, hitbox, platforms) << ")" << std::endl;
+    if(jnr::checkAABB(pos, foot_hitbox, platforms)) {
+        state = abs(force.x) < 10 ? &states::still : &states::walking;
+    }else if(vel.y < 0)
+        state = &states::falling;
 
-    inair = !jnr::checkAABB(pos, foot_hitbox, platforms);
     onwall = 0;
     if(jnr::checkAABB(pos, l_arm_hitbox, platforms))
         onwall |= 1U;
     if(jnr::checkAABB(pos, r_arm_hitbox, platforms))
         onwall |= 2U;
 
-    if(vel.y < 0 && ((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)))
+    if(((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)) && all(state->traits, StateTraits::FALLING))
+        state = &states::wall_slide;
+
+    if(*state == states::wall_slide && !((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)))
+        state = &states::falling;
+
+    if(*state == states::wall_slide)
         vel.y -= fabsmin(vel.y * wall_slide_friction * timestep, vel.y);
     if(abs(force.x) < 10)
-        vel.x -= fabsmin(vel.x * (inair ? air_friction : ground_friction) * timestep, vel.x);
+        vel.x -= fabsmin(vel.x * (all(state->traits, StateTraits::IN_AIR) ? air_friction : ground_friction) * timestep, vel.x);
     if(abs(vel.x) < 1)
         vel.x = 0;
 
-    force = vec2(0, gravity);
-    if(vel.y < 0){
-        force *= fall_factor;
-    } else if (!jumping){
-        force *= short_jump_factor;
-    }
-
 }
-
-void Player::move(float dir) {
-
-    float base = (inair ? air_acceleration : ground_acceleration) * dir;
-    if(dir * vel.x < 0.0)
-        base *= (inair ? air_reactivity_factor : ground_reactivity_factor);
-
-    force.x += base;
-}
-
 
