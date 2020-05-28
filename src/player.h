@@ -47,18 +47,21 @@ namespace jnr {
 
     class Player {
     private:
-        glm::uint8  onwall;
         AABB foot_hitbox;
         AABB l_arm_hitbox;
         AABB r_arm_hitbox;
         float statetime;
         void setState(playerstates::State* s);
+        float remainingJumpTime;
+        float remainingGroundCoyoteTime;
+        bool onRightWall, onLeftWall;
+        float remainingLeftWallCoyoteTime, remainingRightWallCoyoteTime;
     public:
         playerstates::State* state;
         glm::vec2 pos;
         glm::vec2 vel;
         glm::vec2 force;
-
+        bool lookToLeft;
         AABB hitbox;
 
         Player(float x, float y);

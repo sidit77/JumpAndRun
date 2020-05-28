@@ -22,6 +22,9 @@ const float air_friction = 1;
 const float air_acceleration = 2000;
 const float air_reactivity_factor = 0.8f;
 
+const float jump_buffer_time = 0.08f;
+const float ground_coyote_time = 0.07f;
+const float wall_coyote_time = 0.1f;
 
 namespace jnr::playerstates::states {
     State jumping    {0, "Jumping",StateTraits::IN_AIR};
@@ -41,7 +44,8 @@ Player::Player(float x, float y) :
     pos(x,y),
     vel(0,0),
     force(0,0),
-    state(&states::jumping){
+    state(&states::jumping),
+    remainingJumpTime(0.0f){
 
 }
 
@@ -59,25 +63,50 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
         force *= short_jump_factor;
     }
 
+    if(!input.jump && *state == states::jumping)
+        setState(&states::short_jump);
+
+    remainingJumpTime -= timestep;
+    if(input.jumpDown)
+        remainingJumpTime = jump_buffer_time;
+
+    remainingGroundCoyoteTime -= timestep;
+    if(all(state->traits, StateTraits::CAN_JUMP))
+        remainingGroundCoyoteTime = ground_coyote_time;
+
+    remainingLeftWallCoyoteTime -= timestep;
+    if(onLeftWall)
+        remainingLeftWallCoyoteTime = wall_coyote_time;
+
+    remainingRightWallCoyoteTime -= timestep;
+    if(onRightWall)
+        remainingRightWallCoyoteTime = wall_coyote_time;
+
+    if (remainingJumpTime > 0) {
+        if(remainingLeftWallCoyoteTime > 0 || remainingGroundCoyoteTime > 0 || remainingRightWallCoyoteTime > 0){
+            float lwc = wall_coyote_time - remainingLeftWallCoyoteTime;
+            float gwc = ground_coyote_time - remainingGroundCoyoteTime;
+            float rwc = wall_coyote_time - remainingRightWallCoyoteTime;
+            if(gwc <= lwc && gwc <= rwc)
+                vel.y = jump_impulse;
+            else
+                vel = vec2(((lookToLeft = (lwc > rwc)) ? -1 : 1) * 0.7, 1) * jump_impulse;
+            force.y = 0;
+            setState(&states::jumping);
+            remainingJumpTime = 0;
+            remainingGroundCoyoteTime = 0;
+            remainingLeftWallCoyoteTime = 0;
+            remainingRightWallCoyoteTime = 0;
+        }
+    }
+
     float base = (all(state->traits, StateTraits::IN_AIR) ? air_acceleration : ground_acceleration) * input.move.x;
     if(input.move.x * vel.x < 0.0)
         base *= (all(state->traits, StateTraits::IN_AIR) ? air_reactivity_factor : ground_reactivity_factor);
     force.x += base;
 
-    if(!input.jump && *state == states::jumping)
-        setState(&states::short_jump);
-
-    if (input.jumpDown) {
-        if(all(state->traits, StateTraits::CAN_JUMP)) {
-            vel.y = jump_impulse;
-            force.y = 0;
-            setState(&states::jumping);
-        } else if(onwall){
-            vel = vec2((onwall & 1U ? 1 : -1) * 0.7, 1) * jump_impulse;
-            force.y = 0;
-            setState(&states::jumping);
-        }
-    }
+    if(force.x != 0)
+        lookToLeft = force.x < 0;
 
     vel.y += force.y * timestep;
     if(abs(vel.x + force.x * timestep) <= fmax(max_speed, abs(vel.x)))
@@ -117,16 +146,13 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     }else if(vel.y < 0 && !all(state->traits, StateTraits::FALLING))
         setState(&states::falling);
 
-    onwall = 0;
-    if(jnr::checkAABB(pos, l_arm_hitbox, platforms))
-        onwall |= 1U;
-    if(jnr::checkAABB(pos, r_arm_hitbox, platforms))
-        onwall |= 2U;
+    onLeftWall = jnr::checkAABB(pos, l_arm_hitbox, platforms);
+    onRightWall = jnr::checkAABB(pos, r_arm_hitbox, platforms);
 
-    if(((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)) && all(state->traits, StateTraits::FALLING))
+    if(((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)) && all(state->traits, StateTraits::FALLING))
         setState(&states::wall_slide);
 
-    if(*state == states::wall_slide && !((onwall & 1U && force.x < 0) || (onwall & 2U && force.x > 0)))
+    if(*state == states::wall_slide && !((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)))
         setState(&states::falling);
 
     if(*state == states::wall_slide)
@@ -142,10 +168,6 @@ void Player::setState(playerstates::State *s) {
     if(*s == *state)
         return;
     statetime = 0;
-    //if(*state == states::jumping && *s == states::falling){
-    //    state = &states::hovering;
-    //}else{
-        state = s;
-    //}
+    state = s;
 }
 

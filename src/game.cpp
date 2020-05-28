@@ -86,9 +86,6 @@ void Game::update(float timestep, GLFWwindow* window) {
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         input.move.y -= 1.0f;
 
-    if(input.move.x != 0)
-        creature_manager->SetMirrorY(input.move.x < 0);
-
     input.jump = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
     input.jumpDown = !lastInput.jump && input.jump;
 
@@ -143,6 +140,7 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     }
 
     creature_manager->AutoBlendTo(player.state->name, delta * 10);
+    creature_manager->SetMirrorY(player.lookToLeft);
     creature_manager->Update(delta);
     creature_manager->GetCreature()->FillRenderColours(255,255,255,255);
     creature_renderer->draw(player.pos + player.vel * catchup, 17, cam);
