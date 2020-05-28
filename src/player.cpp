@@ -12,6 +12,7 @@ const float jump_impulse = 700;
 const float gravity = -1200;
 const float fall_factor = 2.0f;
 const float short_jump_factor = 3.0f;
+const float max_fall_speed = -1300;
 
 const float max_speed = 400;
 const float wall_slide_friction = 12;
@@ -109,6 +110,9 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
         lookToLeft = force.x < 0;
 
     vel.y += force.y * timestep;
+    if(vel.y < max_fall_speed)
+        vel.y = max_fall_speed;
+
     if(abs(vel.x + force.x * timestep) <= fmax(max_speed, abs(vel.x)))
         vel.x += force.x * timestep;
     else if(abs(vel.x) < max_speed)

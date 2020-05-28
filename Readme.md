@@ -10,6 +10,7 @@
 * ~~fix getting stuck on corners~~
 * ~~fix physics bug~~
 * short lockout after walljump?
+* keep an internal, unclamped version of `vel`?
 
 ### Engine
 #### General
