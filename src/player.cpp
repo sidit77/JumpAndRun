@@ -25,7 +25,7 @@ const float air_reactivity_factor = 0.8f;
 
 namespace jnr::playerstates::states {
     State jumping    {0, "Jumping",StateTraits::IN_AIR};
-    State walking    {1, "Walking",StateTraits::CAN_JUMP};
+    State walking    {1, "Running",StateTraits::CAN_JUMP};
     State still      {2, "Still",StateTraits::CAN_JUMP};
     State falling    {3, "Falling",(StateTraits::IN_AIR | StateTraits::FALLING)};
     State short_jump {4, "Jumping",StateTraits::IN_AIR};
@@ -114,7 +114,7 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
         } else if(!(*state == states::idle)){
             setState(&states::still);
         }
-    }else if(vel.y < 0)
+    }else if(vel.y < 0 && !all(state->traits, StateTraits::FALLING))
         setState(&states::falling);
 
     onwall = 0;
@@ -142,6 +142,10 @@ void Player::setState(playerstates::State *s) {
     if(*s == *state)
         return;
     statetime = 0;
-    state = s;
+    //if(*state == states::jumping && *s == states::falling){
+    //    state = &states::hovering;
+    //}else{
+        state = s;
+    //}
 }
 

@@ -65,7 +65,11 @@ Game::Game() :
     creature_manager = std::make_unique<CreatureModule::CreatureManager>(cur_creature);
     creature_manager->CreateAnimation(json_data, "Running");
     creature_manager->CreateAnimation(json_data, "Idle");
-    creature_manager->SetActiveAnimationName("Idle");
+    creature_manager->CreateAnimation(json_data, "Still");
+    creature_manager->CreateAnimation(json_data, "Jumping");
+    creature_manager->CreateAnimation(json_data, "Falling");
+    creature_manager->CreateAnimation(json_data, "Sliding");
+    creature_manager->SetActiveAnimationName("Still");
     creature_manager->SetAutoBlending(true);
     creature_manager->SetIsPlaying(true);
 
@@ -101,7 +105,7 @@ void Game::update(float timestep, GLFWwindow* window) {
     player.update(timestep, input, platforms);
 }
 
-
+float f = 0;
 void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     cam.aspect = (float)screensize.x / screensize.y;
     cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
@@ -138,12 +142,7 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
         glEnd();
     }
 
-    if(abs(player.vel.x) > 30){
-        creature_manager->AutoBlendTo("Running", delta * 10);
-    }else{
-        creature_manager->AutoBlendTo("Idle", delta * 10);
-    }
-
+    creature_manager->AutoBlendTo(player.state->name, delta * 10);
     creature_manager->Update(delta);
     creature_manager->GetCreature()->FillRenderColours(255,255,255,255);
     creature_renderer->draw(player.pos + player.vel * catchup, 17, cam);
