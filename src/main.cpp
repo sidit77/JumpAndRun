@@ -60,7 +60,7 @@ int main() {
         bool movint = true;
         double lastupdate = glfwGetTime();
         double lastframe = glfwGetTime();
-        int timestep = 60;
+        int timestep = 144;
         float speed = 1;
 
         while (!glfwWindowShouldClose(window)){
