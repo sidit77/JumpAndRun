@@ -55,6 +55,7 @@ namespace jnr {
         float remainingJumpTime;
         float remainingGroundCoyoteTime;
         bool onRightWall, onLeftWall;
+        bool short_jump;
         float remainingLeftWallCoyoteTime, remainingRightWallCoyoteTime;
     public:
         playerstates::State* state;

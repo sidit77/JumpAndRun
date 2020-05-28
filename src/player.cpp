@@ -16,7 +16,7 @@ const float max_fall_speed = -1300;
 
 const float max_speed = 400;
 const float wall_slide_friction = 12;
-const float ground_friction = 7;
+const float ground_friction = 9;
 const float ground_acceleration = 1600;
 const float ground_reactivity_factor = 3;
 const float air_friction = 1;
@@ -32,9 +32,8 @@ namespace jnr::playerstates::states {
     State walking    {1, "Running",StateTraits::CAN_JUMP};
     State still      {2, "Still",StateTraits::CAN_JUMP};
     State falling    {3, "Falling",(StateTraits::IN_AIR | StateTraits::FALLING)};
-    State short_jump {4, "Jumping",StateTraits::IN_AIR};
-    State wall_slide {5, "Sliding",StateTraits::NONE};
-    State idle       {6, "Idle",StateTraits::CAN_JUMP};
+    State wall_slide {4, "Sliding",StateTraits::NONE};
+    State idle       {5, "Idle",StateTraits::CAN_JUMP};
 }
 
 Player::Player(float x, float y) :
@@ -60,12 +59,12 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     force = vec2(0, gravity);
     if(all(state->traits, StateTraits::FALLING))
         force *= fall_factor;
-    if (*state == states::short_jump){
+    else if (short_jump){
         force *= short_jump_factor;
     }
 
-    if(!input.jump && *state == states::jumping)
-        setState(&states::short_jump);
+    if(!input.jump && vel.y > 0)
+        short_jump = true;
 
     remainingJumpTime -= timestep * (input.jump ? 1.0f : 3.0f);
     if(input.jumpDown)
@@ -98,6 +97,7 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
             remainingGroundCoyoteTime = 0;
             remainingLeftWallCoyoteTime = 0;
             remainingRightWallCoyoteTime = 0;
+            short_jump = false;
         }
     }
 
@@ -153,16 +153,16 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     onLeftWall = jnr::checkAABB(pos, l_arm_hitbox, platforms);
     onRightWall = jnr::checkAABB(pos, r_arm_hitbox, platforms);
 
-    if(((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)) && all(state->traits, StateTraits::FALLING))
+    if(((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)) && all(state->traits, StateTraits::IN_AIR)) // && all(state->traits, StateTraits::FALLING)
         setState(&states::wall_slide);
 
     if(*state == states::wall_slide && !((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)))
-        setState(&states::falling);
+        setState(vel.y < 0 ? &states::falling : &states::jumping);
 
     //if(input.jump && all(state->traits, StateTraits::FALLING))
     //    vel.y -= fabsmin(vel.y * 18 * timestep, vel.y);
 
-    if(*state == states::wall_slide)
+    if(*state == states::wall_slide && vel.y < 0)
         vel.y -= fabsmin(vel.y * wall_slide_friction * timestep, vel.y);
     if(abs(force.x) < 10)
         vel.x -= fabsmin(vel.x * (all(state->traits, StateTraits::IN_AIR) ? air_friction : ground_friction) * timestep, vel.x);
