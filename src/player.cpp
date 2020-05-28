@@ -159,10 +159,15 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     if(*state == states::wall_slide && !((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)))
         setState(&states::falling);
 
+    //if(input.jump && all(state->traits, StateTraits::FALLING))
+    //    vel.y -= fabsmin(vel.y * 18 * timestep, vel.y);
+
     if(*state == states::wall_slide)
         vel.y -= fabsmin(vel.y * wall_slide_friction * timestep, vel.y);
     if(abs(force.x) < 10)
         vel.x -= fabsmin(vel.x * (all(state->traits, StateTraits::IN_AIR) ? air_friction : ground_friction) * timestep, vel.x);
+    if(abs(vel.x) > max_speed)
+        vel.x -= fabsmin(faddabs(vel.x, -max_speed) * (all(state->traits, StateTraits::IN_AIR) ? air_friction : ground_friction) * timestep, faddabs(vel.x, -max_speed));
     if(abs(vel.x) < 1)
         vel.x = 0;
 

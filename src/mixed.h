@@ -20,6 +20,10 @@ namespace jnr {
         return abs(a) < abs(b) ? a : b;
     }
 
+    inline float faddabs(float a, float b){
+        return a < 0 ? a - b : a + b;
+    }
+
     struct Input {
         glm::vec2 move;
         bool jump;
