@@ -87,8 +87,19 @@ void Game::update(float timestep, GLFWwindow* window) {
         input.move.y -= 1.0f;
 
     input.jump = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
-    input.jumpDown = !lastInput.jump && input.jump;
 
+    if(glfwJoystickIsGamepad(GLFW_JOYSTICK_1)){
+        GLFWgamepadstate state;
+        if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)){
+            input.jump |= state.buttons[GLFW_GAMEPAD_BUTTON_A] == GLFW_PRESS;
+
+            vec2 mv(state.axes[GLFW_GAMEPAD_AXIS_LEFT_X],state.axes[GLFW_GAMEPAD_AXIS_LEFT_X]);
+            if(length(mv) > 0.3)
+                input.move = mv;
+        }
+    }
+
+    input.jumpDown = !lastInput.jump && input.jump;
     //static bool bp;
     //if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
     //    if (!bp) {
