@@ -39,8 +39,8 @@ namespace jnr::playerstates::states {
 Player::Player(float x, float y) :
     hitbox{vec2(-20,0),vec2(20,70)},
     foot_hitbox{vec2(-19, -1), vec2(19,1)},
-    l_arm_hitbox{vec2(-21,10),vec2(-19,60)},
-    r_arm_hitbox{vec2(19,10),vec2(21,60)},
+    l_arm_hitbox{vec2(-23,15),vec2(-19,69)},
+    r_arm_hitbox{vec2(19,15),vec2(23,69)},
     pos(x,y),
     vel(0,0),
     force(0,0),
@@ -66,7 +66,7 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     if(!input.jump && *state == states::jumping)
         setState(&states::short_jump);
 
-    remainingJumpTime -= timestep;
+    remainingJumpTime -= timestep * (input.jump ? 1.0f : 3.0f);
     if(input.jumpDown)
         remainingJumpTime = jump_buffer_time;
 
