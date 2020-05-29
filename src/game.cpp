@@ -5,14 +5,12 @@
 #include <memory>
 #include <MeshBone.h>
 
-
 using namespace jnr;
 using namespace glm;
 
 AABB getPlatform(float x, float y, float w, float h){
     return AABB{vec2(x,y), vec2(x+w,y+h)};
 }
-
 
 Game::Game() :
         cam(),

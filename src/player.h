@@ -53,6 +53,9 @@ namespace jnr {
         AABB foot_hitbox;
         AABB l_arm_hitbox;
         AABB r_arm_hitbox;
+        AABB hitbox;
+        bool lookToLeft;
+        playerstates::State* state;
         float statetime;
         void setState(playerstates::State* s);
         float remainingJumpTime;
@@ -61,12 +64,9 @@ namespace jnr {
         bool short_jump;
         float remainingLeftWallCoyoteTime, remainingRightWallCoyoteTime;
     public:
-        playerstates::State* state;
         glm::vec2 pos;
         glm::vec2 vel;
         glm::vec2 force;
-        bool lookToLeft;
-        AABB hitbox;
 
         Player(float x, float y, const std::string& creature_path, const std::string& texture_path);
 
