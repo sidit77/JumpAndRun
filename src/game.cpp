@@ -13,9 +13,10 @@ AABB getPlatform(float x, float y, float w, float h){
     return AABB{vec2(x,y), vec2(x+w,y+h)};
 }
 
+
 Game::Game() :
         cam(),
-        player(50, 290),
+        player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         platforms(),
         program{std::make_shared<Shader>("res/shader/platform_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<Shader>("res/shader/platform_fragment.glsl", GL_FRAGMENT_SHADER)},
         staticvao(),
@@ -57,21 +58,6 @@ Game::Game() :
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    CreatureModule::CreatureLoadDataPacket json_data;
-    CreatureModule::LoadCreatureJSONData("assets/character/character_data.json", json_data);
-    auto cur_creature = std::make_shared<CreatureModule::Creature>(json_data);
-
-    creature_renderer = std::make_unique<CreatureRenderer>(cur_creature, "assets/character/character_atlas.png");
-    creature_manager = std::make_unique<CreatureModule::CreatureManager>(cur_creature);
-    creature_manager->CreateAnimation(json_data, "Running");
-    creature_manager->CreateAnimation(json_data, "Idle");
-    creature_manager->CreateAnimation(json_data, "Still");
-    creature_manager->CreateAnimation(json_data, "Jumping");
-    creature_manager->CreateAnimation(json_data, "Falling");
-    creature_manager->CreateAnimation(json_data, "Sliding");
-    creature_manager->SetActiveAnimationName("Still");
-    creature_manager->SetAutoBlending(true);
-    creature_manager->SetIsPlaying(true);
 
 }
 
@@ -131,30 +117,10 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     glBindVertexArray(0);
     glUseProgram(0);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(cam.position.x - (cam.scale * cam.aspect), cam.position.x + (cam.scale * cam.aspect), cam.position.y - cam.scale, cam.position.y + cam.scale, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
+    if(showphitbox)
+        player.drawDebug(delta, catchup, cam);
 
-    if(showphitbox) {
-        glColor3f(1.0f, 0.42f, 0.42f);
-        glBegin(GL_QUADS);
-        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low.x,
-                   player.pos.y + player.vel.y * catchup + player.hitbox.low.y, 0.3f);
-        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x,
-                   player.pos.y + player.vel.y * catchup + player.hitbox.low.y, 0.3f);
-        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.high.x,
-                   player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
-        glVertex3f(player.pos.x + player.vel.x * catchup + player.hitbox.low.x,
-                   player.pos.y + player.vel.y * catchup + player.hitbox.high.y, 0.3f);
-        glEnd();
-    }
-
-    creature_manager->AutoBlendTo(player.state->name, delta * 10);
-    creature_manager->SetMirrorY(player.lookToLeft);
-    creature_manager->Update(delta);
-    creature_manager->GetCreature()->FillRenderColours(255,255,255,255);
-    creature_renderer->draw(player.pos + player.vel * catchup, 17, cam);
+    player.draw(delta, catchup, cam);
 
 }
 
@@ -168,7 +134,6 @@ void Game::ongui() {
         cam.position = vec2(0,0);
     }
     ImGui::Checkbox("Show Hitbox", &showphitbox);
-    ImGui::Text("vel: [%.2f,%.2f]", player.vel.x, player.vel.y);
-    ImGui::Text("state: %s", player.state->name.c_str());
+    player.ongui();
 }
 

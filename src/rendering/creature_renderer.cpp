@@ -5,11 +5,11 @@
 using namespace jnr;
 using namespace glm;
 
-CreatureRenderer::CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_ptr, const std::string& texpath) :
+CreatureRenderer::CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_ptr, std::shared_ptr<Texture> tex) :
         creature(std::move(c_ptr)),
+        texture(std::move(tex)),
         vao(),
         pos_buffer(), tex_buffer(), ind_buffer(), col_buffer(),
-        texture(texpath),
         program{std::make_shared<Shader>("res/shader/character_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<Shader>("res/shader/character_fragment.glsl", GL_FRAGMENT_SHADER)}
 {
 
@@ -38,7 +38,7 @@ CreatureRenderer::CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_p
 void CreatureRenderer::draw(glm::vec2 pos, float scale, const Camera &cam) {
     vao.bind();
     program.bind();
-    texture.bind(GL_TEXTURE_2D, GL_TEXTURE0);
+    texture->bind(GL_TEXTURE_2D, GL_TEXTURE0);
     glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
     glUniform2f(program.getUniformLocation("pos"), pos.x, pos.y);
     glUniform1f(program.getUniformLocation("scale"), scale);

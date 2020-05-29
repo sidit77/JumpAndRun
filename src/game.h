@@ -15,8 +15,6 @@ namespace jnr {
 
     class Game : private NonCopyable{
     private:
-        std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
-        std::unique_ptr<CreatureRenderer> creature_renderer;
         std::vector<AABB> platforms;
         Camera cam;
         Player player;

@@ -5,6 +5,7 @@
 #include <vector>
 #include "physics.h"
 #include "mixed.h"
+#include "rendering/creature_renderer.h"
 
 namespace jnr {
 
@@ -47,6 +48,8 @@ namespace jnr {
 
     class Player {
     private:
+        std::unique_ptr<CreatureRenderer> creature_renderer;
+        std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
         AABB foot_hitbox;
         AABB l_arm_hitbox;
         AABB r_arm_hitbox;
@@ -65,9 +68,13 @@ namespace jnr {
         bool lookToLeft;
         AABB hitbox;
 
-        Player(float x, float y);
+        Player(float x, float y, const std::string& creature_path, const std::string& texture_path);
 
         void update(float timestep, Input input, const std::vector<jnr::AABB>&);
+
+        void draw(float delta, float catchup, Camera& cam);
+        void drawDebug(float delta, float catchup, Camera& cam);
+        void ongui();
 
     };
 

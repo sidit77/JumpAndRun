@@ -2,6 +2,7 @@
 #include "player.h"
 #include "mixed.h"
 #include <limits>
+#include <imgui.h>
 
 using namespace jnr;
 using namespace glm;
@@ -36,7 +37,7 @@ namespace jnr::playerstates::states {
     State idle       {5, "Idle",StateTraits::CAN_JUMP};
 }
 
-Player::Player(float x, float y) :
+Player::Player(float x, float y, const std::string& creature_path, const std::string& texture_path) :
     hitbox{vec2(-20,0),vec2(20,70)},
     foot_hitbox{vec2(-19, -1), vec2(19,1)},
     l_arm_hitbox{vec2(-23,15),vec2(-19,69)},
@@ -44,8 +45,24 @@ Player::Player(float x, float y) :
     pos(x,y),
     vel(0,0),
     force(0,0),
-    state(&states::jumping),
-    remainingJumpTime(0.0f){
+    state(&states::jumping){
+
+
+    CreatureModule::CreatureLoadDataPacket json_data;
+    CreatureModule::LoadCreatureJSONData(creature_path, json_data);
+    auto creature =  std::make_shared<CreatureModule::Creature>(json_data);
+    creature_renderer = std::make_unique<CreatureRenderer>(creature, std::make_shared<Texture>(texture_path));
+    creature_manager = std::make_unique<CreatureModule::CreatureManager>(creature);
+
+    creature_manager->CreateAnimation(json_data, "Running");
+    creature_manager->CreateAnimation(json_data, "Idle");
+    creature_manager->CreateAnimation(json_data, "Still");
+    creature_manager->CreateAnimation(json_data, "Jumping");
+    creature_manager->CreateAnimation(json_data, "Falling");
+    creature_manager->CreateAnimation(json_data, "Sliding");
+    creature_manager->SetActiveAnimationName("Still");
+    creature_manager->SetAutoBlending(true);
+    creature_manager->SetIsPlaying(true);
 
 }
 
@@ -178,5 +195,45 @@ void Player::setState(playerstates::State *s) {
         return;
     statetime = 0;
     state = s;
+}
+
+void Player::draw(float delta, float catchup, Camera& cam) {
+    creature_manager->AutoBlendTo(state->name, delta * 10);
+    creature_manager->SetMirrorY(lookToLeft);
+    creature_manager->Update(delta);
+    creature_manager->GetCreature()->FillRenderColours(255,255,255,255);
+    creature_renderer->draw(pos + vel * catchup, 17, cam);
+}
+
+void Player::ongui() {
+    ImGui::Text("vel: [%.2f,%.2f]", vel.x, vel.y);
+    ImGui::Text("state: %s", state->name.c_str());
+}
+
+void drawAABB(vec2 pos, AABB& aabb, float r, float g, float b, float a){
+    glColor4f(r, g, b, a);
+    glBegin(GL_QUADS);
+    glVertex3f(pos.x + aabb.low.x,
+               pos.y + aabb.low.y, 0.3f);
+    glVertex3f(pos.x + aabb.high.x,
+               pos.y + aabb.low.y, 0.3f);
+    glVertex3f(pos.x + aabb.high.x,
+               pos.y + aabb.high.y, 0.3f);
+    glVertex3f(pos.x + aabb.low.x,
+               pos.y + aabb.high.y, 0.3f);
+    glEnd();
+}
+
+void Player::drawDebug(float delta, float catchup, Camera &cam) {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(cam.position.x - (cam.scale * cam.aspect), cam.position.x + (cam.scale * cam.aspect), cam.position.y - cam.scale, cam.position.y + cam.scale, -1.0f, 1.0f);
+    glMatrixMode(GL_MODELVIEW);
+
+    drawAABB(pos + vel * catchup, hitbox      , 1.00f,0.42f,0.42f,0.6f);
+    drawAABB(pos + vel * catchup, r_arm_hitbox, 0.42f,0.42f,1.00f,0.6f);
+    drawAABB(pos + vel * catchup, l_arm_hitbox, 0.42f,0.42f,1.00f,0.6f);
+    drawAABB(pos + vel * catchup, foot_hitbox , 0.42f,1.00f,0.42f,0.6f);
+
 }
 

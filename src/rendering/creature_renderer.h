@@ -14,9 +14,9 @@ namespace jnr {
         Program program;
         VertexArray vao;
         VertexBuffer pos_buffer, col_buffer, tex_buffer, ind_buffer;
-        Texture texture;
+        std::shared_ptr<Texture> texture;
     public:
-        CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_ptr, const std::string& texpath);
+        CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_ptr, std::shared_ptr<Texture> tex);
         ~CreatureRenderer() = default;
         void draw(glm::vec2 pos, float scale, const Camera& camera);
     };
