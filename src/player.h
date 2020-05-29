@@ -6,6 +6,7 @@
 #include "physics.h"
 #include "mixed.h"
 #include "rendering/creature_renderer.h"
+#include "level.h"
 
 namespace jnr {
 
@@ -50,6 +51,7 @@ namespace jnr {
     private:
         std::unique_ptr<CreatureRenderer> creature_renderer;
         std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
+        std::shared_ptr<Level> level;
         AABB foot_hitbox;
         AABB l_arm_hitbox;
         AABB r_arm_hitbox;
@@ -70,12 +72,14 @@ namespace jnr {
 
         Player(float x, float y, const std::string& creature_path, const std::string& texture_path);
 
-        void update(float timestep, Input input, const std::vector<jnr::AABB>&);
+        void update(float timestep, Input input);
 
         void draw(float delta, float catchup, Camera& cam);
         void drawDebug(float delta, float catchup, Camera& cam);
         void ongui();
 
+        const Level* getLevel() const;
+        void setLevel(std::shared_ptr<Level> level);
     };
 
 

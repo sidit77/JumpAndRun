@@ -2,6 +2,7 @@
 #include "player.h"
 #include "mixed.h"
 #include <limits>
+#include <utility>
 #include <imgui.h>
 
 using namespace jnr;
@@ -67,7 +68,10 @@ Player::Player(float x, float y, const std::string& creature_path, const std::st
 }
 
 
-void Player::update(float timestep, Input input, const std::vector<AABB>& platforms) {
+void Player::update(float timestep, Input input) {
+    if(!level)
+        return;
+
     statetime += timestep;
     if(*state == states::still && statetime > 2)
         setState(&states::idle);
@@ -138,7 +142,7 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     float remainingtime = timestep;
     //std::cout << "start (" << to_string(vel) << ")";
     for(int i = 0; i < 10 && remainingtime > timestep * 0.05f; i++) {
-        CollisionInfo info = jnr::checkSweptAABB(pos, vel * remainingtime, hitbox, platforms);
+        CollisionInfo info = jnr::checkSweptAABB(pos, vel * remainingtime, hitbox, level->getHitboxes());
         if (info.valid) {
             //pos += info.normal * info.depth;
             pos += vel * remainingtime * info.time;
@@ -158,7 +162,7 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
         }
     }
     //std::cout << " > result(" << jnr::checkAABB(pos, hitbox, platforms) << ")" << std::endl;
-    if(jnr::checkAABB(pos, foot_hitbox, platforms)) {
+    if(jnr::checkAABB(pos, foot_hitbox, level->getHitboxes())) {
         if(abs(force.x) > 10){
             setState(&states::walking);
         } else if(!(*state == states::idle)){
@@ -167,8 +171,8 @@ void Player::update(float timestep, Input input, const std::vector<AABB>& platfo
     }else if(vel.y < 0 && !all(state->traits, StateTraits::FALLING))
         setState(&states::falling);
 
-    onLeftWall = jnr::checkAABB(pos, l_arm_hitbox, platforms);
-    onRightWall = jnr::checkAABB(pos, r_arm_hitbox, platforms);
+    onLeftWall = jnr::checkAABB(pos, l_arm_hitbox, level->getHitboxes());
+    onRightWall = jnr::checkAABB(pos, r_arm_hitbox, level->getHitboxes());
 
     if(((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)) && all(state->traits, StateTraits::IN_AIR)) // && all(state->traits, StateTraits::FALLING)
         setState(&states::wall_slide);
@@ -235,5 +239,13 @@ void Player::drawDebug(float delta, float catchup, Camera &cam) {
     drawAABB(pos + vel * catchup, l_arm_hitbox, 0.42f,0.42f,1.00f,0.6f);
     drawAABB(pos + vel * catchup, foot_hitbox , 0.42f,1.00f,0.42f,0.6f);
 
+}
+
+void Player::setLevel(std::shared_ptr<Level> l) {
+    level = std::move(l);
+}
+
+const Level *Player::getLevel() const {
+    return level.get();
 }
 

@@ -10,14 +10,15 @@
 #include "rendering/opengl/buffer.h"
 #include "rendering/opengl/texture.h"
 #include "rendering/creature_renderer.h"
+#include "level.h"
 
 namespace jnr {
 
     class Game : private NonCopyable{
     private:
-        std::vector<AABB> platforms;
         Camera cam;
         Player player;
+        std::shared_ptr<Level> level;
         VertexBuffer staticvbo;
         VertexArray staticvao;
         Program program;
