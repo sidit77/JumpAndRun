@@ -22,6 +22,8 @@ include_directories(libs/glm/glm)
 include_directories(libs/imgui)
 include_directories(libs/creature-runtime/gason)
 include_directories(libs/stb)
+include_directories(libs/toml/include)
+
 
 add_library(glad "libs/glad/src/glad.c")
 add_library(gason "libs/creature-runtime/gason/gason.cpp")

@@ -4,8 +4,9 @@
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
+#include <toml++/toml.h>
 #include "game.h"
-
+#include "config.h"
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
@@ -25,10 +26,19 @@ int main() {
 
     glfwSetErrorCallback(error_callback);
 
-    int vsync = 1;
-    bool fullscreen = false;
+    //auto tomlconfig = toml::parse(R"(
+    //    [graphics]
+    //    fullscreen = false
+    //    vsync = 1
+//
+    //    [dependencies]
+    //    cpp = 17
+    //)");
+
+
+
     int spbackup[4];
-    window = glfwCreateWindow(1280, 720, "Jump And Run", fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+    window = glfwCreateWindow(1280, 720, "Jump And Run", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -55,18 +65,17 @@ int main() {
 
 
     {
-        jnr::Game game;
+        jnr::Config config;
+        jnr::Game game(config);
 
-        bool movint = true;
         double lastupdate = glfwGetTime();
         double lastframe = glfwGetTime();
-        int timestep = 144;
-        float speed = 1;
 
         while (!glfwWindowShouldClose(window)){
-            while (glfwGetTime() - lastupdate > 1.0 / timestep) {
-                lastupdate += 1.0 / timestep;
-                game.update(speed * (1.0f / (float)timestep), window);
+            while (glfwGetTime() - lastupdate > 1.0 / config.timestep) {
+                lastupdate += 1.0 / config.timestep;
+                game.update(config.speed * (1.0f / (float)config.timestep), window);
+
             }
 
             glm::ivec2 screensize;
@@ -76,33 +85,39 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT); //
 
             double delta = glfwGetTime() - lastframe;
-            game.render(speed * delta,speed * (glfwGetTime() - lastupdate) * (movint ? 1 : 0), screensize);
+            game.render(config.speed * delta,config.speed * (glfwGetTime() - lastupdate) * (config.movint ? 1 : 0), screensize);
             lastframe += delta;
 
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
             game.ongui();
+            //ImGui::Checkbox("Fullsceen")
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            glfwSwapInterval(vsync);
+            glfwSwapInterval(config.vsync);
             glfwSwapBuffers(window);
             glfwPollEvents();
-
-            if((glfwGetWindowMonitor(window) != NULL) != fullscreen){
-                GLFWmonitor* monitor = glfwGetPrimaryMonitor();//;
-                const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-                if(fullscreen) {
-                    glfwGetWindowPos(window, &spbackup[0], &spbackup[1]);
-                    glfwGetWindowSize(window, &spbackup[2], &spbackup[3]);
-                    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
-                } else {
-                    glfwSetWindowMonitor(window, NULL, spbackup[0], spbackup[1], spbackup[2], spbackup[3], GLFW_DONT_CARE);
+            {
+                //bool fullscreen = config["graphics"]["fullscreen"].value_or(false);
+                if((glfwGetWindowMonitor(window) != NULL) != config.fullscreen){
+                    GLFWmonitor* monitor = glfwGetPrimaryMonitor();//;
+                    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+                    if(config.fullscreen) {
+                        glfwGetWindowPos(window, &spbackup[0], &spbackup[1]);
+                        glfwGetWindowSize(window, &spbackup[2], &spbackup[3]);
+                        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
+                    } else {
+                        glfwSetWindowMonitor(window, NULL, spbackup[0], spbackup[1], spbackup[2], spbackup[3], GLFW_DONT_CARE);
+                    }
                 }
             }
+
         }
     }
+
+    //std::cout << config << std::endl;
 
     glfwTerminate();
     return 0;

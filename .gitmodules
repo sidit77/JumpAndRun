@@ -22,3 +22,7 @@
 	path = libs/stb
 	url = https://github.com/nothings/stb.git
 	branch = master
+[submodule "toml"]
+	path = libs/toml
+	url = https://github.com/marzer/tomlplusplus.git
+	branch = tags/v1.2.5

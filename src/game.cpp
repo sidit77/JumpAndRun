@@ -10,7 +10,8 @@ using namespace glm;
 
 
 
-Game::Game() :
+Game::Game(Config& c) :
+        config(c),
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         level(std::make_shared<Level>()),
@@ -80,15 +81,15 @@ void Game::ongui() {
         player.ongui(jnr::INFO);
     }
     if(ImGui::CollapsingHeader("Graphics")){
-        //ImGui::InputInt("timestep", &timestep, 1, 10);
-        //timestep = std::max(1, timestep);
-        //ImGui::InputInt("Vsync", &vsync, 1, 1);
-        //vsync = std::max(0, vsync);
-        //ImGui::SliderFloat("speed", &speed, 0, 3);
-        //ImGui::Checkbox("Fullscreen", &fullscreen);
-        //ImGui::Checkbox("mov. pred.", &movint);
-        //ImGui::Separator();
-        //game.ongui(jnr::GRAPHICS);
+        ImGui::InputInt("timestep", &config.timestep, 1, 10);
+        config.timestep = std::max(1, config.timestep);
+        ImGui::InputInt("Vsync", &config.vsync, 1, 1);
+        config.vsync = std::max(0, config.vsync);
+        ImGui::SliderFloat("speed", &config.speed, 0, 3);
+        ImGui::Checkbox("Fullscreen", &config.fullscreen);
+        ImGui::Checkbox("mov. pred.", &config.movint);
+        ImGui::Separator();
+        player.ongui(jnr::GRAPHICS);
     }
     if(ImGui::CollapsingHeader("Debug")) {
         if (ImGui::Button("Reset Player")) {

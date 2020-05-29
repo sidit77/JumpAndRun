@@ -11,18 +11,20 @@
 #include "rendering/opengl/texture.h"
 #include "rendering/creature_renderer.h"
 #include "level.h"
+#include "config.h"
 
 namespace jnr {
 
     class Game : private NonCopyable{
     private:
+        Config& config;
         Camera cam;
         Player player;
         std::shared_ptr<Level> level;
         bool showphitbox = false;
         Input lastInput;
     public:
-        Game();
+        Game(Config& c);
         ~Game();
         void update(float timestep, GLFWwindow*);
         void render(float delta, float catchup, glm::ivec2 screensize);
