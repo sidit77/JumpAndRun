@@ -19,9 +19,6 @@ namespace jnr {
         Camera cam;
         Player player;
         std::shared_ptr<Level> level;
-        VertexBuffer staticvbo;
-        VertexArray staticvao;
-        Program program;
         bool showphitbox = false;
         Input lastInput;
     public:

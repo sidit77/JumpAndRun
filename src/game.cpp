@@ -14,35 +14,9 @@ Game::Game() :
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         level(std::make_shared<Level>()),
-        program{std::make_shared<Shader>("res/shader/platform_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<Shader>("res/shader/platform_fragment.glsl", GL_FRAGMENT_SHADER)},
-        staticvao(),
-        staticvbo(),
         lastInput()
 {
     player.setLevel(level);
-
-    std::vector<vec3> vertices = {
-            vec3(-0.5f, -0.5f, 0.7f),
-            vec3( 0.5f, -0.5f, 0.7f),
-            vec3( 0.0f,  0.5f, 0.7f),
-    };
-
-    for(auto plat : level->getHitboxes()){
-        vertices.emplace_back(plat.low .x, plat.low .y, 0.0f);
-        vertices.emplace_back(plat.high.x, plat.low .y, 0.0f);
-        vertices.emplace_back(plat.high.x, plat.high.y, 0.0f);
-        vertices.emplace_back(plat.high.x, plat.high.y, 0.0f);
-        vertices.emplace_back(plat.low .x, plat.high.y, 0.0f);
-        vertices.emplace_back(plat.low .x, plat.low .y, 0.0f);
-    }
-
-    staticvao.bind();
-    staticvbo.bind(GL_ARRAY_BUFFER);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), vertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-
 }
 
 void Game::update(float timestep, GLFWwindow* window) {
@@ -83,23 +57,12 @@ void Game::update(float timestep, GLFWwindow* window) {
     player.update(timestep, input);
 }
 
-float f = 0;
 void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     cam.aspect = (float)screensize.x / screensize.y;
     cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
     cam.update();
 
-    program.bind();
-    staticvao.bind();
-    glUniform3f(program.getUniformLocation("color"), 1.0f, 0.5f, 0.7f);
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    glUniform3f(program.getUniformLocation("color"), 0.0f, 0.43f, 0.67f);
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
-    glDrawArrays(GL_TRIANGLES, 3, 6 * level->getHitboxes().size());
-    glBindVertexArray(0);
-    glUseProgram(0);
+    level->draw(delta, catchup, cam);
 
     if(showphitbox)
         player.drawDebug(delta, catchup, cam);
