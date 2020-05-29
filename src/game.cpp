@@ -74,13 +74,36 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
 Game::~Game() = default;
 
 void Game::ongui() {
-    if(ImGui::Button("Reset Player")){
-        player.pos = vec2(40, 290);
-        player.vel = vec2(0,0);
-        player.force = vec2(0,0);
-        cam.position = vec2(0,0);
+    ImGui::Begin("General");
+    if(ImGui::CollapsingHeader("Info")){
+        ImGui::Text("fps: %.1f", ImGui::GetIO().Framerate);
+        player.ongui(jnr::INFO);
     }
-    ImGui::Checkbox("Show Hitbox", &showphitbox);
-    player.ongui();
+    if(ImGui::CollapsingHeader("Graphics")){
+        //ImGui::InputInt("timestep", &timestep, 1, 10);
+        //timestep = std::max(1, timestep);
+        //ImGui::InputInt("Vsync", &vsync, 1, 1);
+        //vsync = std::max(0, vsync);
+        //ImGui::SliderFloat("speed", &speed, 0, 3);
+        //ImGui::Checkbox("Fullscreen", &fullscreen);
+        //ImGui::Checkbox("mov. pred.", &movint);
+        //ImGui::Separator();
+        //game.ongui(jnr::GRAPHICS);
+    }
+    if(ImGui::CollapsingHeader("Debug")) {
+        if (ImGui::Button("Reset Player")) {
+            player.pos = vec2(40, 290);
+            player.vel = vec2(0, 0);
+            player.force = vec2(0, 0);
+            cam.position = vec2(0, 0);
+        }
+        ImGui::Checkbox("Show Player Hitbox", &showphitbox);
+        static bool demo = false;
+        if(ImGui::Button("Show ImGui Demo"))
+            demo = true;
+        if(demo)
+            ImGui::ShowDemoWindow(&demo);
+    }
+    ImGui::End();
 }
 

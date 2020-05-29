@@ -82,19 +82,7 @@ int main() {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
-            {
-                ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-                ImGui::SliderInt("timestep", &timestep, 1, 300);
-                ImGui::SliderFloat("speed", &speed, 0, 3);
-                ImGui::Checkbox("Fullscreen", &fullscreen);
-                ImGui::SliderInt("Vsync", &vsync, 0, 8);
-                ImGui::Checkbox("mov. pred.", &movint);
-                //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-                game.ongui();
-
-
-            }
+            game.ongui();
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

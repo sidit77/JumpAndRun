@@ -76,7 +76,7 @@ namespace jnr {
 
         void draw(float delta, float catchup, Camera& cam);
         void drawDebug(float delta, float catchup, Camera& cam);
-        void ongui();
+        void ongui(GuiSection);
 
         const Level* getLevel() const;
         void setLevel(std::shared_ptr<Level> level);

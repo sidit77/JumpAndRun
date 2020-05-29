@@ -30,4 +30,8 @@ namespace jnr {
         bool jumpDown;
     };
 
+    enum GuiSection{
+        INFO, GRAPHICS, DEBUG
+    };
+
 }

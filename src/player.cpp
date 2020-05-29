@@ -209,9 +209,12 @@ void Player::draw(float delta, float catchup, Camera& cam) {
     creature_renderer->draw(pos + vel * catchup, 17, cam);
 }
 
-void Player::ongui() {
-    ImGui::Text("vel: [%.2f,%.2f]", vel.x, vel.y);
-    ImGui::Text("state: %s", state->name.c_str());
+void Player::ongui(GuiSection s) {
+    if(s == INFO) {
+        ImGui::Text("vel: [%.2f,%.2f]", vel.x, vel.y);
+        ImGui::Text("pos: [%.2f,%.2f]", pos.x, pos.y);
+        ImGui::Text("state: %s", state->name.c_str());
+    }
 }
 
 void drawAABB(vec2 pos, AABB& aabb, float r, float g, float b, float a){
