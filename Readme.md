@@ -17,6 +17,9 @@
 * use `glBufferStorage`
 * add uniform location caching
 * remove color support from `CreatureRenderer`?
+* ~~Move `Config` into `Game`~~
+* ~~Figure out a save format for config files~~
+
 #### Resource Manager
 * central resource list that gets loaded during startup
 * resources can be stored in internal archive or external asset folder

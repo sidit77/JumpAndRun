@@ -17,18 +17,20 @@ namespace jnr {
 
     class Game : private NonCopyable{
     private:
-        Config& config;
+        GLFWwindow* window;
+        Config config;
         Camera cam;
         Player player;
         std::shared_ptr<Level> level;
         bool showphitbox = false;
         Input lastInput;
     public:
-        Game(Config& c);
+        Game(GLFWwindow* w);
         ~Game();
-        void update(float timestep, GLFWwindow*);
+        void update(float timestep);
         void render(float delta, float catchup, glm::ivec2 screensize);
         void ongui();
+        Config& getConfig(){return config;}
     };
 
 }

@@ -4,14 +4,14 @@
 #include <iostream>
 #include <memory>
 #include <MeshBone.h>
+#include <algorithm>
 
 using namespace jnr;
 using namespace glm;
 
-
-
-Game::Game(Config& c) :
-        config(c),
+Game::Game(GLFWwindow* w) :
+        config("config.toml"),
+        window(w),
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         level(std::make_shared<Level>()),
@@ -20,7 +20,7 @@ Game::Game(Config& c) :
     player.setLevel(level);
 }
 
-void Game::update(float timestep, GLFWwindow* window) {
+void Game::update(float timestep) {
     Input input{};
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         input.move.x -= 1.0f;
@@ -75,36 +75,81 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
 Game::~Game() = default;
 
 void Game::ongui() {
-    ImGui::Begin("General");
-    if(ImGui::CollapsingHeader("Info")){
-        ImGui::Text("fps: %.1f", ImGui::GetIO().Framerate);
-        player.ongui(jnr::INFO);
-    }
-    if(ImGui::CollapsingHeader("Graphics")){
-        ImGui::InputInt("timestep", &config.timestep, 1, 10);
-        config.timestep = std::max(1, config.timestep);
-        ImGui::InputInt("Vsync", &config.vsync, 1, 1);
-        config.vsync = std::max(0, config.vsync);
-        ImGui::SliderFloat("speed", &config.speed, 0, 3);
-        ImGui::Checkbox("Fullscreen", &config.fullscreen);
-        ImGui::Checkbox("mov. pred.", &config.movint);
-        ImGui::Separator();
-        player.ongui(jnr::GRAPHICS);
-    }
-    if(ImGui::CollapsingHeader("Debug")) {
-        if (ImGui::Button("Reset Player")) {
-            player.pos = vec2(40, 290);
-            player.vel = vec2(0, 0);
-            player.force = vec2(0, 0);
-            cam.position = vec2(0, 0);
+    static bool settings = false;
+    {
+        const float DISTANCE = 10.0f;
+        static int corner = 0;
+        ImGuiIO &io = ImGui::GetIO();
+        if (corner != -1) {
+            ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE,
+                                       (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+            ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+            ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
         }
-        ImGui::Checkbox("Show Player Hitbox", &showphitbox);
-        static bool demo = false;
-        if(ImGui::Button("Show ImGui Demo"))
-            demo = true;
-        if(demo)
-            ImGui::ShowDemoWindow(&demo);
+        ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+        ImGuiWindowFlags window_flags =
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+                ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+        if (corner != -1)
+            window_flags |= ImGuiWindowFlags_NoMove;
+        ImGui::Begin("Info-Overlay", NULL, window_flags);
+        {
+            ImGui::Text("fps: %.1f                  ", ImGui::GetIO().Framerate);
+            player.ongui(jnr::INFO);
+            ImGui::Separator();
+            if (ImGui::Button("Settings"))
+                settings = true;
+            ImGui::SameLine();
+            if (ImGui::Button("Quit"))
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
+            if (ImGui::BeginPopupContextWindow()) {
+                if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
+                if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
+                if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
+                if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
+                if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
+                ImGui::EndPopup();
+            }
+        }
+        ImGui::End();
     }
-    ImGui::End();
+
+    if(settings) {
+        ImGui::SetNextWindowBgAlpha(0.6f);
+        ImGui::Begin("Settings", &settings, ImGuiWindowFlags_AlwaysAutoResize);
+        //ImGui::SetWindowSize(ImVec2(800, 200));
+        if (ImGui::CollapsingHeader("Graphics                             ")) {
+            int timestep = (int)config.get()["graphics"]["timestep"].ref<int64_t>();
+            ImGui::InputInt("timestep", &timestep, 1, 10);
+            config.get()["graphics"]["timestep"].ref<int64_t>() = std::max(1, timestep);
+
+            int vsync = (int)config.get()["graphics"]["vsync"].ref<int64_t>();
+            ImGui::InputInt("Vsync", &vsync, 1, 1);
+            config.get()["graphics"]["vsync"].ref<int64_t>() = std::max(0, vsync);
+
+            float speed = (float)config.get()["graphics"]["speed"].ref<double>();
+            ImGui::SliderFloat("speed", &speed, 0, 3);
+            config.get()["graphics"]["speed"].ref<double>() = speed;
+
+            ImGui::Checkbox("Fullscreen",          &config.get()["graphics"]["fullscreen"]        .ref<bool>());
+            ImGui::Checkbox("movement prediction", &config.get()["graphics"]["movement_smoothing"].ref<bool>());
+            player.ongui(jnr::GRAPHICS);
+        }
+        if (ImGui::CollapsingHeader("Debug")) {
+            if (ImGui::Button("Reset Player")) {
+                player.pos = vec2(40, 290);
+                player.vel = vec2(0, 0);
+                player.force = vec2(0, 0);
+                cam.position = vec2(0, 0);
+            }
+            ImGui::Checkbox("Show Player Hitbox", &showphitbox);
+            static bool demo = false;
+            if (ImGui::Button("Show ImGui Demo"))
+                demo = true;
+            if (demo)
+                ImGui::ShowDemoWindow(&demo);
+        }
+        ImGui::End();
+    }
 }
 
