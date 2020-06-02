@@ -19,7 +19,8 @@
 * remove color support from `CreatureRenderer`?
 * ~~Move Config into Game~~
 * ~~Figure out a save format for config files~~
-* Proper screen resize events and maybe windowless fullscreen
+* ~~Proper screen resize events and maybe windowless fullscreen~~
+* Rename physics functions to sensible things
 
 #### Resource Manager
 * central resource list that gets loaded during startup

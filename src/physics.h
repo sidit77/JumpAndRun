@@ -24,4 +24,5 @@ namespace jnr {
 
     CollisionInfo checkSweptAABB(glm::vec2 pos, glm::vec2 vel, AABB bb, const std::vector<AABB>& staticbb);
     bool checkAABB(glm::vec2 pos, AABB bb, const std::vector<AABB>& staticbb);
+    bool AABBCheck(AABB bb1, AABB bb2);
 }

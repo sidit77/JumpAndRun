@@ -23,6 +23,9 @@ Game::Game(Config& c, GLFWwindow* w) :
 }
 
 void Game::update(float timestep) {
+    if(editor)
+        return;
+
     Input input{};
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         input.move.x -= 1.0f;
@@ -47,30 +50,31 @@ void Game::update(float timestep) {
     }
 
     input.jumpDown = !lastInput.jump && input.jump;
-    //static bool bp;
-    //if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-    //    if (!bp) {
-    //        player.vel += 1000.0f * mv;
-    //        bp = true;
-    //    }
-    //} else {
-    //    bp = false;
-    //}
     lastInput = input;
     player.update(timestep, input);
 }
 
 void Game::render(float delta, float catchup, glm::ivec2 screensize) {
-    cam.aspect = (float)screensize.x / screensize.y;
-    cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
-    cam.update();
+    if(!editor){
+        cam.aspect = (float)screensize.x / screensize.y;
+        cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
+        cam.update();
 
-    level->draw(delta, catchup, cam);
+        level->draw(delta, catchup, cam);
 
-    if(debugOptions.showPlayerHitbox)
-        player.drawDebug(delta, catchup, cam);
+        if(debugOptions.showPlayerHitbox)
+            player.drawDebug(delta, catchup, cam);
 
-    player.draw(delta, catchup, cam);
+        player.draw(delta, catchup, cam);
+    } else {
+        editor->render(delta, catchup, screensize);
+
+        if(debugOptions.showPlayerHitbox)
+            player.drawDebug(0, 0, editor->getCam());
+
+        player.draw(0, 0, editor->getCam());
+    }
+
 
 }
 
@@ -84,8 +88,12 @@ void Game::ongui() {
         ImGui::Text("fps: %.1f", ImGui::GetIO().Framerate);
         player.ongui(jnr::INFO);
         ImGui::Separator();
-        if (ImGui::Button("Open Editor"))
-            settings = true;
+        if (ImGui::Button(!editor ? "Open Editor" : "Quit Editor")) {
+            if (editor)
+                editor.reset();
+            else
+                editor = std::make_unique<LevelEditor>(cam, level);
+        }
         ImGui::SameLine();
         if (ImGui::Button("Settings"))
             settings = true;
@@ -131,5 +139,13 @@ void Game::ongui() {
     }
     if (demo)
         ImGui::ShowDemoWindow(&demo);
+    if(editor){
+        bool e_open = true;
+        ImGui::Begin("Editor", &e_open, ImGuiWindowFlags_AlwaysAutoResize);
+        editor->ongui();
+        ImGui::End();
+        if(!e_open)
+            editor.reset();
+    }
 }
 

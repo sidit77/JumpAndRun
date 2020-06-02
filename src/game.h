@@ -11,6 +11,7 @@
 #include "rendering/opengl/texture.h"
 #include "rendering/creature_renderer.h"
 #include "level.h"
+#include "leveleditor.h"
 #include "config.h"
 
 namespace jnr {
@@ -30,6 +31,7 @@ namespace jnr {
         Camera cam;
         Player player;
         std::shared_ptr<Level> level;
+        std::unique_ptr<LevelEditor> editor;
         Input lastInput;
     public:
         Game(Config& c, GLFWwindow* w);

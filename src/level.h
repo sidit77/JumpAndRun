@@ -13,7 +13,10 @@ namespace jnr {
         VertexBuffer staticvbo;
         VertexArray staticvao;
         Program program;
+
+        void rebuildMesh();
     public:
+        friend class LevelEditor;
         Level();
         const std::vector<AABB>& getHitboxes();
 

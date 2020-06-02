@@ -3,9 +3,6 @@
 #include <glm.hpp>
 
 namespace jnr {
-    struct Platform {
-        int x, y, w, h;
-    };
 
     class NonCopyable{
     protected:
@@ -33,6 +30,5 @@ namespace jnr {
     enum GuiSection{
         INFO, GRAPHICS, DEBUG
     };
-
 
 }

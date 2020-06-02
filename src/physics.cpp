@@ -19,10 +19,6 @@ inline AABB getBroadphaseAABB(vec2 vel, AABB bb){
     return result;
 }
 
-inline bool AABBCheck(AABB bb1, AABB bb2){
-    return !(bb1.high.x <= bb2.low.x || bb1.low.x >= bb2.high.x || bb1.high.y <= bb2.low.y || bb1.low.y >= bb2.high.y);
-}
-
 CollisionInfo getSweptAABB(AABB bb1, vec2 vel, AABB bb2){
     vec2 InvEntry, InvExit;
 
@@ -110,3 +106,6 @@ bool jnr::checkAABB(vec2 pos, AABB bb, const std::vector<AABB>& staticbb){
     return false;
 }
 
+inline bool jnr::AABBCheck(AABB bb1, AABB bb2){
+    return !(bb1.high.x <= bb2.low.x || bb1.low.x >= bb2.high.x || bb1.high.y <= bb2.low.y || bb1.low.y >= bb2.high.y);
+}
