@@ -79,7 +79,7 @@ Game::~Game() = default;
 void Game::ongui() {
     static bool settings = false;
     static int corner;
-    guihelper::beginInfoOverlay(&corner);
+    guihelper::beginInfoOverlay(config);
     {
         ImGui::Text("fps: %.1f                  ", ImGui::GetIO().Framerate);
         player.ongui(jnr::INFO);
@@ -97,11 +97,11 @@ void Game::ongui() {
         ImGui::Begin("Settings", &settings, ImGuiWindowFlags_AlwaysAutoResize);
         //ImGui::SetWindowSize(ImVec2(800, 200));
         if (ImGui::CollapsingHeader("Graphics                             ")) {
-            ConfigPtr<int> vsync(config, config["graphics"]["vsync"]);
+            ConfigPtr<int> vsync(config, config["display"]["vsync"]);
             ImGui::InputInt("Vsync", &vsync.getRef(), 1, 1);
             vsync.getRef() = std::max(0, vsync.getRef());
 
-            ConfigPtr<bool> fullscreen(config, config["graphics"]["fullscreen"]);
+            ConfigPtr<bool> fullscreen(config, config["display"]["fullscreen"]);
             ImGui::Checkbox("Fullscreen", &fullscreen.getRef());
 
             player.ongui(jnr::GRAPHICS);
@@ -123,6 +123,10 @@ void Game::ongui() {
                 demo = true;
             if (demo)
                 ImGui::ShowDemoWindow(&demo);
+            if (ImGui::Button("Reset Settings")) {
+                config.reset();
+
+            }
         }
         ImGui::End();
     }

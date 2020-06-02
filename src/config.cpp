@@ -11,6 +11,10 @@ toml::Value getDefaultConfig(){
     result["display"]["y"] = 100;
     result["display"]["w"] = 1280;
     result["display"]["h"] = 720;
+
+    result["ui"]["overlay"]["corner"] = 0;
+    result["ui"]["overlay"]["x"] = 10.0;
+    result["ui"]["overlay"]["y"] = 10.0;
     return result;
 }
 
@@ -26,7 +30,6 @@ jnr::Config::Config(std::string p) : path(std::move(p)){
         std::cout << "cannot apply custom config!" << std::endl;
         config = getDefaultConfig();
     }
-    dirty = true;
 }
 
 jnr::Config::~Config() {
@@ -47,5 +50,10 @@ toml::Value& jnr::Config::operator[](const std::string &key) {
         return *v;
 
     return *config.setChild(key, toml::Value());
+}
+
+void jnr::Config::reset() {
+    config = getDefaultConfig();
+    dirty = true;
 }
 

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "../config.h"
+
 namespace jnr{
     namespace guihelper {
-        void beginInfoOverlay(int* corner);
+        void beginInfoOverlay(Config& config);
     };
 }
 

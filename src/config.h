@@ -15,6 +15,7 @@ namespace jnr{
         explicit Config(std::string path);
         ~Config();
         toml::Value& operator[](const std::string& key);
+        void reset();
     };
 
     template<typename T>
