@@ -10,6 +10,8 @@ namespace jnr {
         jnr::Camera cam;
         std::shared_ptr<jnr::Level> level;
 
+        int grid = 0;
+
         LevelEditor(jnr::Camera cam, std::shared_ptr<jnr::Level> level);
 
         void update(float timestep);
