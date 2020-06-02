@@ -17,8 +17,9 @@
 * use `glBufferStorage`
 * add uniform location caching
 * remove color support from `CreatureRenderer`?
-* ~~Move `Config` into `Game`~~
+* ~~Move Config into Game~~
 * ~~Figure out a save format for config files~~
+* Proper screen resize events and maybe windowless fullscreen
 
 #### Resource Manager
 * central resource list that gets loaded during startup

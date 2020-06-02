@@ -22,7 +22,7 @@ include_directories(libs/glm/glm)
 include_directories(libs/imgui)
 include_directories(libs/creature-runtime/gason)
 include_directories(libs/stb)
-include_directories(libs/toml/include)
+include_directories(libs/tinytoml/include)
 
 
 add_library(glad "libs/glad/src/glad.c")

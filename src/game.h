@@ -15,22 +15,30 @@
 
 namespace jnr {
 
+    struct DebugOptions {
+        int timestep = 144;
+        float speed = 1.0f;
+        bool movement_smoothing = true;
+        bool showPlayerHitbox = false;
+    };
+
     class Game : private NonCopyable{
     private:
         GLFWwindow* window;
-        Config config;
+        Config& config;
+        DebugOptions debugOptions;
         Camera cam;
         Player player;
         std::shared_ptr<Level> level;
-        bool showphitbox = false;
         Input lastInput;
     public:
-        Game(GLFWwindow* w);
+        Game(Config& c, GLFWwindow* w);
         ~Game();
         void update(float timestep);
         void render(float delta, float catchup, glm::ivec2 screensize);
         void ongui();
         Config& getConfig(){return config;}
+        DebugOptions& getDebugOptions(){return debugOptions;}
     };
 
 }

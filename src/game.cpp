@@ -10,8 +10,9 @@
 using namespace jnr;
 using namespace glm;
 
-Game::Game(GLFWwindow* w) :
-        config("config.toml"),
+Game::Game(Config& c, GLFWwindow* w) :
+        config(c),
+        debugOptions(),
         window(w),
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
@@ -66,7 +67,7 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
 
     level->draw(delta, catchup, cam);
 
-    if(showphitbox)
+    if(debugOptions.showPlayerHitbox)
         player.drawDebug(delta, catchup, cam);
 
     player.draw(delta, catchup, cam);
@@ -96,30 +97,27 @@ void Game::ongui() {
         ImGui::Begin("Settings", &settings, ImGuiWindowFlags_AlwaysAutoResize);
         //ImGui::SetWindowSize(ImVec2(800, 200));
         if (ImGui::CollapsingHeader("Graphics                             ")) {
-            int timestep = (int)config.get()["graphics"]["timestep"].ref<int64_t>();
-            ImGui::InputInt("timestep", &timestep, 1, 10);
-            config.get()["graphics"]["timestep"].ref<int64_t>() = std::max(1, timestep);
+            ConfigPtr<int> vsync(config, config["graphics"]["vsync"]);
+            ImGui::InputInt("Vsync", &vsync.getRef(), 1, 1);
+            vsync.getRef() = std::max(0, vsync.getRef());
 
-            int vsync = (int)config.get()["graphics"]["vsync"].ref<int64_t>();
-            ImGui::InputInt("Vsync", &vsync, 1, 1);
-            config.get()["graphics"]["vsync"].ref<int64_t>() = std::max(0, vsync);
+            ConfigPtr<bool> fullscreen(config, config["graphics"]["fullscreen"]);
+            ImGui::Checkbox("Fullscreen", &fullscreen.getRef());
 
-            float speed = (float)config.get()["graphics"]["speed"].ref<double>();
-            ImGui::SliderFloat("speed", &speed, 0, 3);
-            config.get()["graphics"]["speed"].ref<double>() = speed;
-
-            ImGui::Checkbox("Fullscreen",          &config.get()["graphics"]["fullscreen"]        .ref<bool>());
-            ImGui::Checkbox("movement prediction", &config.get()["graphics"]["movement_smoothing"].ref<bool>());
             player.ongui(jnr::GRAPHICS);
         }
         if (ImGui::CollapsingHeader("Debug")) {
+            ImGui::InputInt("timestep", &debugOptions.timestep, 1, 10);
+            debugOptions.timestep = std::max(1, debugOptions.timestep);
+            ImGui::SliderFloat("speed", &debugOptions.speed, 0, 3);
+            ImGui::Checkbox("movement prediction", &debugOptions.movement_smoothing);
+            ImGui::Checkbox("Show Player Hitbox", &debugOptions.showPlayerHitbox);
             if (ImGui::Button("Reset Player")) {
                 player.pos = vec2(40, 290);
                 player.vel = vec2(0, 0);
                 player.force = vec2(0, 0);
                 cam.position = vec2(0, 0);
             }
-            ImGui::Checkbox("Show Player Hitbox", &showphitbox);
             static bool demo = false;
             if (ImGui::Button("Show ImGui Demo"))
                 demo = true;

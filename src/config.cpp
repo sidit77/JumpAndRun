@@ -3,56 +3,49 @@
 #include <fstream>
 #include <utility>
 
-void compareTable(toml::table& a, toml::table& b){
-    for(auto&& [k, v] : b){
-        v.visit([&c = a, &k = k](auto& node) noexcept{
-            if(!c.contains(k) || !c[k].is<decltype(node)>()){
-                std::cerr << "Restoring " << k << std::endl;
-                c.insert_or_assign(k, std::move(node));
-            } else if(toml::is_table<decltype(node)>){
-                auto& b = (toml::table&)node;
-                compareTable(c[k].ref<toml::table>(), b);
-            }
-        });
-    }
+toml::Value getDefaultConfig(){
+    toml::Value result;
+    result["display"]["fullscreen"] = false;
+    result["display"]["vsync"] = 1;
+    result["display"]["x"] = 100;
+    result["display"]["y"] = 100;
+    result["display"]["w"] = 1280;
+    result["display"]["h"] = 720;
+    return result;
 }
 
 jnr::Config::Config(std::string p) : path(std::move(p)){
-    toml::table default_config = toml::parse(R"(
-        [graphics]
-        fullscreen = false
-        vsync = 1
-        movement_smoothing = true
-        timestep = 144
-        speed = 1.0
-        [display]
-        x = 100
-        y = 100
-        w = 1280
-        h = 720
-    )");
+    config = getDefaultConfig();
 
-    std::ifstream myfile (path);
-    if (myfile.is_open()){
-        try {
-            config = toml::parse(myfile);
-        } catch (const toml::parse_error& err) {
-            std::cerr << "config can't be parsed!" << std::endl;
-        }
-        myfile.close();
-    }else{
-        std::cerr << "Config can't be found!" << std::endl;
+    std::ifstream ifs("config.toml");
+    toml::ParseResult pr = toml::parse(ifs);
+    ifs.close();
+    if (!pr.valid()) {
+        std::cout << pr.errorReason << std::endl;
+    } else if(!config.merge(pr.value)){
+        std::cout << "cannot apply custom config!" << std::endl;
+        config = getDefaultConfig();
     }
-
-    compareTable(config, default_config);
+    dirty = true;
 }
 
 jnr::Config::~Config() {
     std::ofstream myfile (path);
     if (myfile.is_open())
     {
-        myfile << config;
+        config.writeFormatted(&myfile, toml::FormatFlag::FORMAT_INDENT);
         myfile.close();
     }
     else std::cerr << "cannot save config!" << std::endl;
 }
+
+toml::Value& jnr::Config::operator[](const std::string &key) {
+    if (!config.valid())
+        config = toml::Value((toml::Table()));
+
+    if (toml::Value* v = config.findChild(key))
+        return *v;
+
+    return *config.setChild(key, toml::Value());
+}
+

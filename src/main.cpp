@@ -4,7 +4,6 @@
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
-#include <toml++/toml.h>
 #include "game.h"
 #include "config.h"
 
@@ -12,11 +11,17 @@ void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
 }
 
+void configureWindow(GLFWwindow* window, jnr::Config& conf);
+void backupWindow(GLFWwindow* window, jnr::Config& conf);
+
 int main() {
     GLFWwindow* window;
 
     if (!glfwInit())
         return -1;
+
+    glfwSetErrorCallback(error_callback);
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
@@ -24,16 +29,8 @@ int main() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
-    glfwSetErrorCallback(error_callback);
 
-    //auto tomlconfig = toml::parse(R"(
-    //    [graphics]
-    //    fullscreen = false
-    //    vsync = 1
-//
-    //    [dependencies]
-    //    cpp = 17
-    //)");
+    jnr::Config config("config.toml");
 
     window = glfwCreateWindow(1280, 720, "Jump And Run", NULL, NULL);
     if (!window) {
@@ -43,7 +40,6 @@ int main() {
 
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-    glfwSwapInterval(1);
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -62,24 +58,22 @@ int main() {
 
 
     {
-        jnr::Game game(window);
-
-        glfwSetWindowMonitor(window, NULL,
-                game.getConfig().get()["display"]["x"].ref<int64_t>(),
-                game.getConfig().get()["display"]["y"].ref<int64_t>(),
-                game.getConfig().get()["display"]["w"].ref<int64_t>(),
-                game.getConfig().get()["display"]["h"].ref<int64_t>(),
-                GLFW_DONT_CARE);
+        jnr::Game game(config, window);
 
         double lastupdate = glfwGetTime();
         double lastframe = glfwGetTime();
 
         while (!glfwWindowShouldClose(window)){
-            int64_t timestep = game.getConfig().get()["graphics"]["timestep"].ref<int64_t>();
-            float speed = (float)game.getConfig().get()["graphics"]["speed"].ref<double>();
-            while (glfwGetTime() - lastupdate > 1.0 / timestep) {
-                lastupdate += 1.0 / timestep;
-                game.update(speed * (1.0f / timestep));
+            if(glfwGetWindowMonitor(window) == NULL){
+                backupWindow(window, config);
+            }
+            if(game.getConfig().dirty){
+                game.getConfig().dirty = false;
+                configureWindow(window, config);
+            }
+            while (glfwGetTime() - lastupdate > 1.0 / game.getDebugOptions().timestep) {
+                lastupdate += 1.0 / game.getDebugOptions().timestep;
+                game.update(game.getDebugOptions().speed * (1.0 / game.getDebugOptions().timestep));
 
             }
 
@@ -91,8 +85,8 @@ int main() {
 
             double delta = glfwGetTime() - lastframe;
             game.render(
-                    speed * delta,
-                    speed * (glfwGetTime() - lastupdate) * (game.getConfig().get()["graphics"]["movement_smoothing"].ref<bool>() ? 1 : 0),
+                    game.getDebugOptions().speed * delta,
+                    game.getDebugOptions().speed * (glfwGetTime() - lastupdate) * (game.getDebugOptions().movement_smoothing ? 1 : 0),
                     screensize);
             lastframe += delta;
 
@@ -104,48 +98,40 @@ int main() {
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            glfwSwapInterval(game.getConfig().get()["graphics"]["vsync"].ref<int64_t>());
             glfwSwapBuffers(window);
             glfwPollEvents();
-            {
-                bool fullscreen = game.getConfig().get()["graphics"]["fullscreen"].ref<bool>();
-                if((glfwGetWindowMonitor(window) != NULL) != fullscreen){
-                    GLFWmonitor* monitor = glfwGetPrimaryMonitor();//;
-                    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-                    if(fullscreen) {
-                        int spbackup[4];
-                        glfwGetWindowPos(window, &spbackup[0], &spbackup[1]);
-                        glfwGetWindowSize(window, &spbackup[2], &spbackup[3]);
-                        game.getConfig().get()["display"]["x"].ref<int64_t>() = spbackup[0];
-                        game.getConfig().get()["display"]["y"].ref<int64_t>() = spbackup[1];
-                        game.getConfig().get()["display"]["w"].ref<int64_t>() = spbackup[2];
-                        game.getConfig().get()["display"]["h"].ref<int64_t>() = spbackup[3];
-                        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
-                    } else {
-                        glfwSetWindowMonitor(window, NULL,
-                                             game.getConfig().get()["display"]["x"].ref<int64_t>(),
-                                             game.getConfig().get()["display"]["y"].ref<int64_t>(),
-                                             game.getConfig().get()["display"]["w"].ref<int64_t>(),
-                                             game.getConfig().get()["display"]["h"].ref<int64_t>(),
-                                             GLFW_DONT_CARE);
-                    }
-                }
-            }
-
-        }
-
-        if(!game.getConfig().get()["graphics"]["fullscreen"].ref<bool>()){
-            int spbackup[4];
-            glfwGetWindowPos(window, &spbackup[0], &spbackup[1]);
-            glfwGetWindowSize(window, &spbackup[2], &spbackup[3]);
-            game.getConfig().get()["display"]["x"].ref<int64_t>() = spbackup[0];
-            game.getConfig().get()["display"]["y"].ref<int64_t>() = spbackup[1];
-            game.getConfig().get()["display"]["w"].ref<int64_t>() = spbackup[2];
-            game.getConfig().get()["display"]["h"].ref<int64_t>() = spbackup[3];
         }
     }
     //std::cout << config << std::endl;
 
     glfwTerminate();
     return 0;
+}
+
+void configureWindow(GLFWwindow* window, jnr::Config& conf){
+    glfwSwapInterval(conf["graphics"]["vsync"].as<int>());
+
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    if(conf["graphics"]["fullscreen"].as<bool>()) {
+        backupWindow(window, conf);
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
+    } else {
+        glfwSetWindowMonitor(window, NULL,
+                             conf["display"]["x"].as<int>(),
+                             conf["display"]["y"].as<int>(),
+                             conf["display"]["w"].as<int>(),
+                             conf["display"]["h"].as<int>(),
+                             GLFW_DONT_CARE);
+    }
+}
+
+void backupWindow(GLFWwindow* window, jnr::Config& conf){
+    int spbackup[4];
+    glfwGetWindowPos(window, &spbackup[0], &spbackup[1]);
+    glfwGetWindowSize(window, &spbackup[2], &spbackup[3]);
+    conf["display"]["x"] = spbackup[0];
+    conf["display"]["y"] = spbackup[1];
+    conf["display"]["w"] = spbackup[2];
+    conf["display"]["h"] = spbackup[3];
 }
