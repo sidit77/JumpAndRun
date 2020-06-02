@@ -5,6 +5,7 @@
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
 #include "game.h"
+#include "gui/guihelper.h"
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
@@ -70,7 +71,9 @@ int main() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.IniFilename = NULL;
-    ImGui::StyleColorsDark();
+    jnr::guihelper::setupStyle();
+
+
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
 

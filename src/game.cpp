@@ -78,12 +78,15 @@ Game::~Game() = default;
 
 void Game::ongui() {
     static bool settings = false;
-    static int corner;
+    static bool demo = false;
     guihelper::beginInfoOverlay(config);
     {
-        ImGui::Text("fps: %.1f                  ", ImGui::GetIO().Framerate);
+        ImGui::Text("fps: %.1f", ImGui::GetIO().Framerate);
         player.ongui(jnr::INFO);
         ImGui::Separator();
+        if (ImGui::Button("Open Editor"))
+            settings = true;
+        ImGui::SameLine();
         if (ImGui::Button("Settings"))
             settings = true;
         ImGui::SameLine();
@@ -93,7 +96,6 @@ void Game::ongui() {
     ImGui::End();
 
     if(settings) {
-        ImGui::SetNextWindowBgAlpha(0.6f);
         ImGui::Begin("Settings", &settings, ImGuiWindowFlags_AlwaysAutoResize);
         //ImGui::SetWindowSize(ImVec2(800, 200));
         if (ImGui::CollapsingHeader("Graphics                             ")) {
@@ -118,11 +120,8 @@ void Game::ongui() {
                 player.force = vec2(0, 0);
                 cam.position = vec2(0, 0);
             }
-            static bool demo = false;
             if (ImGui::Button("Show ImGui Demo"))
                 demo = true;
-            if (demo)
-                ImGui::ShowDemoWindow(&demo);
             if (ImGui::Button("Reset Settings")) {
                 config.reset();
 
@@ -130,5 +129,7 @@ void Game::ongui() {
         }
         ImGui::End();
     }
+    if (demo)
+        ImGui::ShowDemoWindow(&demo);
 }
 

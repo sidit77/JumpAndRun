@@ -36,3 +36,39 @@ void jnr::guihelper::beginInfoOverlay(Config& config) {
         ImGui::EndPopup();
     }
 }
+
+void jnr::guihelper::setupStyle() {
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowPadding = ImVec2(10, 8);
+    style.FramePadding = ImVec2(4,4);
+    style.ItemSpacing = ImVec2(8,4);
+    style.ItemInnerSpacing = ImVec2(4,4);
+    style.TouchExtraPadding = ImVec2(0,0);
+    style.IndentSpacing = 18;
+    style.ScrollbarSize = 10;
+    style.GrabMinSize = 10;
+
+    style.WindowBorderSize = 0;
+    style.ChildBorderSize = 0;
+    style.PopupBorderSize = 0;
+    style.FrameBorderSize = 0;
+    style.TabBorderSize = 0;
+
+    style.WindowRounding = 10;
+    style.ChildRounding = 10;
+    style.FrameRounding = 5;
+    style.PopupRounding = 8;
+    style.ScrollbarRounding = 12;
+    style.GrabRounding = 5;
+    style.TabRounding = 4;
+
+    style.WindowTitleAlign = ImVec2(0.02f, 0.50f);
+    style.WindowMenuButtonPosition = ImGuiDir_None;
+    style.ColorButtonPosition = ImGuiDir_Right;
+    style.ButtonTextAlign = ImVec2(0.5f,0.5f);
+    style.SelectableTextAlign = ImVec2(0,0);
+
+    style.DisplaySafeAreaPadding = ImVec2(3,3);
+
+    style.Alpha = 0.9f;
+}
