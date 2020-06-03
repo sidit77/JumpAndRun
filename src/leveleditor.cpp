@@ -5,6 +5,7 @@
 #include <iostream>
 #include <gtx/string_cast.hpp>
 #include <algorithm>
+#include <cpp-colors/impl/constants_impl.h>
 #include "physics.h"
 #include "mixed.h"
 #include "gui/guihelper.h"
@@ -24,7 +25,8 @@ glm::vec2 toWorldSpace(jnr::Camera& cam, ImVec2 v){
     return clicpos;
 }
 
-jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::Level> l) : config(con), cam(c), level(std::move(l)) {
+jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::Level> l, std::shared_ptr<PrimitiveRenderer> pr)
+: config(con), cam(c), level(std::move(l)), primitiveRenderer(std::move(pr)) {
     grid = getOrDefault(config["editor"]["grid"], 0);
 }
 
@@ -61,28 +63,23 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
         cam.scale = max(cam.scale - io.MouseWheel * 10 * (cam.scale / 200), 10.0f);
     cam.update();
 
-    glUseProgram(0);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(cam.position.x - (cam.scale * cam.aspect), cam.position.x + (cam.scale * cam.aspect), cam.position.y - cam.scale, cam.position.y + cam.scale, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
-
     float spacing = 1;
     if(grid != 0){
         spacing = 1024.0f / pow(2, grid);
-        glColor4f(0.92f,0.92f,0.92f,0.3f);
-        glBegin(GL_LINES);
+        colors::color c((uint32)colors::dotnet::known_color::antique_white);
+        c.a = 60;
         for(float x = snapToGrid(cam.position.x - cam.scale * cam.aspect, spacing, true);
         x <= snapToGrid(cam.position.x + cam.scale * cam.aspect, spacing,false); x += spacing){
-            glVertex3f(x, cam.position.y - cam.scale, 0.3f);
-            glVertex3f(x, cam.position.y + cam.scale, 0.3f);
+            primitiveRenderer->drawLine(
+                    vec2(x, cam.position.y - cam.scale),
+                    vec2(x, cam.position.y + cam.scale), c,1.5f);
         }
         for(float y = snapToGrid(cam.position.y - cam.scale, spacing, true);
             y <= snapToGrid(cam.position.y + cam.scale, spacing,false); y += spacing){
-            glVertex3f(cam.position.x - cam.scale * cam.aspect, y, 0.3f);
-            glVertex3f(cam.position.x + cam.scale * cam.aspect, y, 0.3f);
+            primitiveRenderer->drawLine(
+                    vec2(cam.position.x - cam.scale * cam.aspect, y),
+                    vec2(cam.position.x + cam.scale * cam.aspect, y), c, 1.5f);
         }
-        glEnd();
     }
 
     if(!io.WantCaptureMouse){
@@ -102,27 +99,9 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
                 level->rebuildMesh();
             }
 
-            glColor4f(0.42f,0.42f,1.00f,0.3f);
-            glBegin(GL_QUADS);
-            glVertex3f(low.x, low.y, 0.3f);
-            glVertex3f(high.x, low.y, 0.3f);
-            glVertex3f(high.x, high.y, 0.3f);
-            glVertex3f(low.x, high.y, 0.3f);
-            glEnd();
-
-            /**
-            glColor4f(0.92f,0.42f,1.00f,0.3f);
-            glBegin(GL_QUADS);
-            glVertex3f(low .x - 5, low .y - 5, 0.3f);
-            glVertex3f(low .x + 5, low .y - 5, 0.3f);
-            glVertex3f(low .x + 5, low .y + 5, 0.3f);
-            glVertex3f(low .x - 5, low .y + 5, 0.3f);
-            glVertex3f(high.x - 5, high.y - 5, 0.3f);
-            glVertex3f(high.x + 5, high.y - 5, 0.3f);
-            glVertex3f(high.x + 5, high.y + 5, 0.3f);
-            glVertex3f(high.x - 5, high.y + 5, 0.3f);
-            glEnd();
-             **/
+            primitiveRenderer->drawAABB(low, high, colors::colorF(0.3f, 0.42f,0.42f,1.00f), 2.0f);
+            primitiveRenderer->drawQuad(clickedpos, vec2(5,5), colors::colorF(0.3f,0.92f,0.42f,1.00f), 2.0f, vec2(0.5,0.5));
+            primitiveRenderer->drawQuad(releasepos, vec2(5,5), colors::colorF(0.3f, 0.92f,0.42f,1.00f), 2.0f, vec2(0.5,0.5));
 
         }
         if(io.MouseReleased[ImGuiMouseButton_Right]){

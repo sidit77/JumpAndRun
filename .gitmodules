@@ -26,3 +26,7 @@
 	path = libs/tinytoml
 	url = https://github.com/mayah/tinytoml.git
 	branch = master
+[submodule "cpp-colors"]
+	path = libs/cpp-colors
+	url = https://github.com/gchudnov/cpp-colors.git
+	branch = master

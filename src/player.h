@@ -7,6 +7,7 @@
 #include "mixed.h"
 #include "rendering/creature_renderer.h"
 #include "level.h"
+#include "rendering/primitiverenderer.h"
 
 namespace jnr {
 
@@ -75,7 +76,7 @@ namespace jnr {
         void update(float timestep, Input input);
 
         void draw(float delta, float catchup, Camera& cam);
-        void drawDebug(float delta, float catchup, Camera& cam);
+        void drawDebug(float delta, float catchup, PrimitiveRenderer& pr);
         void ongui(GuiSection);
 
         const Level* getLevel() const;

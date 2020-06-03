@@ -17,6 +17,7 @@ Game::Game(Config& c, GLFWwindow* w) :
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         level(std::make_shared<Level>()),
+        primitiveRenderer(std::make_shared<PrimitiveRenderer>()),
         lastInput()
 {
     player.setLevel(level);
@@ -63,18 +64,19 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
         level->draw(delta, catchup, cam);
 
         if(debugOptions.showPlayerHitbox)
-            player.drawDebug(delta, catchup, cam);
+            player.drawDebug(delta, catchup, *primitiveRenderer);
 
+        primitiveRenderer->render(cam);
         player.draw(delta, catchup, cam);
     } else {
         editor->render(delta, catchup, screensize);
 
         if(debugOptions.showPlayerHitbox)
-            player.drawDebug(0, 0, editor->getCam());
+            player.drawDebug(0, 0, *primitiveRenderer);
 
+        primitiveRenderer->render(editor->getCam());
         player.draw(0, 0, editor->getCam());
     }
-
 
 }
 
@@ -92,7 +94,7 @@ void Game::ongui() {
             if (editor)
                 editor.reset();
             else
-                editor = std::make_unique<LevelEditor>(config, cam, level);
+                editor = std::make_unique<LevelEditor>(config, cam, level, primitiveRenderer);
         }
         ImGui::SameLine();
         if (ImGui::Button("Settings"))

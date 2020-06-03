@@ -13,6 +13,7 @@
 #include "level.h"
 #include "leveleditor.h"
 #include "config.h"
+#include "rendering/primitiverenderer.h"
 
 namespace jnr {
 
@@ -30,6 +31,7 @@ namespace jnr {
         DebugOptions debugOptions;
         Camera cam;
         Player player;
+        std::shared_ptr<PrimitiveRenderer> primitiveRenderer;
         std::shared_ptr<Level> level;
         std::unique_ptr<LevelEditor> editor;
         Input lastInput;

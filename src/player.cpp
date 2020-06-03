@@ -217,30 +217,15 @@ void Player::ongui(GuiSection s) {
     }
 }
 
-void drawAABB(vec2 pos, AABB& aabb, float r, float g, float b, float a){
-    glColor4f(r, g, b, a);
-    glBegin(GL_QUADS);
-    glVertex3f(pos.x + aabb.low.x,
-               pos.y + aabb.low.y, 0.3f);
-    glVertex3f(pos.x + aabb.high.x,
-               pos.y + aabb.low.y, 0.3f);
-    glVertex3f(pos.x + aabb.high.x,
-               pos.y + aabb.high.y, 0.3f);
-    glVertex3f(pos.x + aabb.low.x,
-               pos.y + aabb.high.y, 0.3f);
-    glEnd();
+void drawAABB(PrimitiveRenderer& pr, vec2 pos, AABB& aabb, colors::color c){
+    pr.drawAABB(pos + aabb.low, pos + aabb.high, c, 0.3f);
 }
 
-void Player::drawDebug(float delta, float catchup, Camera &cam) {
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(cam.position.x - (cam.scale * cam.aspect), cam.position.x + (cam.scale * cam.aspect), cam.position.y - cam.scale, cam.position.y + cam.scale, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
-
-    drawAABB(pos + vel * catchup, hitbox      , 1.00f,0.42f,0.42f,0.6f);
-    drawAABB(pos + vel * catchup, r_arm_hitbox, 0.42f,0.42f,1.00f,0.6f);
-    drawAABB(pos + vel * catchup, l_arm_hitbox, 0.42f,0.42f,1.00f,0.6f);
-    drawAABB(pos + vel * catchup, foot_hitbox , 0.42f,1.00f,0.42f,0.6f);
+void Player::drawDebug(float delta, float catchup, PrimitiveRenderer& pr) {
+    drawAABB(pr, pos + vel * catchup, hitbox      , colors::colorF(0.6f, 1.00f,0.42f,0.42f));
+    drawAABB(pr, pos + vel * catchup, r_arm_hitbox, colors::colorF(0.6f, 0.42f,0.42f,1.00f));
+    drawAABB(pr, pos + vel * catchup, l_arm_hitbox, colors::colorF(0.6f, 0.42f,0.42f,1.00f));
+    drawAABB(pr, pos + vel * catchup, foot_hitbox , colors::colorF(0.6f, 0.42f,1.00f,0.42f));
 
 }
 

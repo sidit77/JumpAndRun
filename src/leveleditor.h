@@ -2,6 +2,7 @@
 
 #include "mixed.h"
 #include "rendering/camera.h"
+#include "rendering/primitiverenderer.h"
 #include "level.h"
 #include "config.h"
 
@@ -11,10 +12,11 @@ namespace jnr {
         jnr::Config& config;
         jnr::Camera cam;
         std::shared_ptr<jnr::Level> level;
+        std::shared_ptr<jnr::PrimitiveRenderer> primitiveRenderer;
 
         int grid = 0;
 
-        LevelEditor(jnr::Config& config, jnr::Camera cam, std::shared_ptr<jnr::Level> level);
+        LevelEditor(jnr::Config& config, jnr::Camera cam, std::shared_ptr<jnr::Level> level, std::shared_ptr<jnr::PrimitiveRenderer> pr);
         ~LevelEditor();
 
         void update(float timestep);

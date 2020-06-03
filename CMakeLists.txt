@@ -23,6 +23,7 @@ include_directories(libs/imgui)
 include_directories(libs/creature-runtime/gason)
 include_directories(libs/stb)
 include_directories(libs/tinytoml/include)
+include_directories(libs/cpp-colors/include)
 
 
 add_library(glad "libs/glad/src/glad.c")
