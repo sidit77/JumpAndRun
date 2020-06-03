@@ -1,0 +1,18 @@
+namespace jnr;
+
+struct LevelVec2{
+  x:float;
+  y:float;
+}
+
+struct LevelHitbox (native_type: "AABB"){
+  low:LevelVec2;
+  high:LevelVec2;
+}
+
+table Level {
+  name:string;
+  hitboxes:[LevelHitbox];
+}
+
+root_type Level;

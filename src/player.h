@@ -52,7 +52,7 @@ namespace jnr {
     private:
         std::unique_ptr<CreatureRenderer> creature_renderer;
         std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
-        std::shared_ptr<Level> level;
+        std::shared_ptr<LevelT> level;
         AABB foot_hitbox;
         AABB l_arm_hitbox;
         AABB r_arm_hitbox;
@@ -79,8 +79,8 @@ namespace jnr {
         void drawDebug(float delta, float catchup, PrimitiveRenderer& pr);
         void ongui(GuiSection);
 
-        const Level* getLevel() const;
-        void setLevel(std::shared_ptr<Level> level);
+        const LevelT* getLevel() const;
+        void setLevel(std::shared_ptr<LevelT> level);
     };
 
 

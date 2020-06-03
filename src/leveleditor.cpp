@@ -25,14 +25,22 @@ glm::vec2 toWorldSpace(jnr::Camera& cam, ImVec2 v){
     return clicpos;
 }
 
-jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::Level> l, std::shared_ptr<PrimitiveRenderer> pr)
+jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::LevelT> l, std::shared_ptr<PrimitiveRenderer> pr)
 : config(con), cam(c), level(std::move(l)), primitiveRenderer(std::move(pr)) {
     grid = getOrDefault(config["editor"]["grid"], 0);
 }
 
 jnr::LevelEditor::~LevelEditor() {
     config["editor"]["grid"] = grid;
-    level->rebuildMesh();
+    std::ofstream file;
+    file.open(config["level"]["name"].as<std::string>(), std::ios::binary | std::ios::out);
+    if(file.is_open()){
+        flatbuffers::FlatBufferBuilder fbb;
+        fbb.Finish(Level::Pack(fbb, level.get()));
+        file.write((char*)fbb.GetBufferPointer(), fbb.GetSize());
+        file.close();
+    }
+    //level->rebuildMesh();
 }
 
 inline float snapToClosest(float v, float space){
@@ -77,7 +85,7 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
 
             if(io.MouseReleased[ImGuiMouseButton_Left] && low.x - high.x != 0 && low.y - high.y != 0) {
                 level->hitboxes.emplace_back(AABB{glm::min(clickedpos, releasepos), glm::max(clickedpos, releasepos)});
-                level->rebuildMesh();
+                //level->rebuildMesh();
             }
 
             primitiveRenderer->drawAABB(low, high, colors::colorF(0.3f, 0.42f,0.42f,1.00f), 2.0f);

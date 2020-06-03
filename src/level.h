@@ -1,26 +1,14 @@
 #pragma once
 
-#include "mixed.h"
 #include "physics.h"
-#include "rendering/camera.h"
-#include "rendering/opengl/buffer.h"
-#include "rendering/opengl/shader.h"
 
 namespace jnr {
-    class Level : private NonCopyable{
-    private:
-        std::vector<AABB> hitboxes;
-        VertexBuffer staticvbo;
-        VertexArray staticvao;
-        Program program;
-
-        void rebuildMesh();
-    public:
-        friend class LevelEditor;
-        Level();
-        const std::vector<AABB>& getHitboxes();
-
-        void draw(float delta, float catchup, Camera& cam);
-    };
+    struct LevelHitbox;
 }
 
+namespace flatbuffers {
+    jnr::LevelHitbox Pack(const jnr::AABB &obj);
+    jnr::AABB UnPack(const jnr::LevelHitbox &obj);
+}
+
+#include "level_generated.h"

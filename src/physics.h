@@ -10,6 +10,8 @@ namespace jnr {
     };
 
     struct AABB {
+        AABB() = default;
+        AABB(const glm::vec2& l, const glm::vec2& h) : low(l), high(h){};
         glm::vec2 low;
         glm::vec2 high;
     };

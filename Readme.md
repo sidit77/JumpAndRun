@@ -26,7 +26,7 @@
 
 #### Editor
 * ~~implement modern opengl line renderer~~
-* map saving
+* ~~map saving~~
 * ~~hitbox outlines~~
 * hitbox moving & resizing
 * ~~save windows pos & grid~~

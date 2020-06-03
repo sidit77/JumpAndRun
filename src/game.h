@@ -32,7 +32,7 @@ namespace jnr {
         Camera cam;
         Player player;
         std::shared_ptr<PrimitiveRenderer> primitiveRenderer;
-        std::shared_ptr<Level> level;
+        std::shared_ptr<LevelT> level;
         std::unique_ptr<LevelEditor> editor;
         Input lastInput;
     public:

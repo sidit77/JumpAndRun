@@ -8,24 +8,25 @@
 
 namespace jnr {
     class LevelEditor : private NonCopyable {
-    public:
+    private:
         jnr::Config& config;
         jnr::Camera cam;
-        std::shared_ptr<jnr::Level> level;
+        std::shared_ptr<jnr::LevelT> level;
         std::shared_ptr<jnr::PrimitiveRenderer> primitiveRenderer;
 
         int grid = 0;
         glm::vec2 clickPos[5];
-
-        LevelEditor(jnr::Config& config, jnr::Camera cam, std::shared_ptr<jnr::Level> level, std::shared_ptr<jnr::PrimitiveRenderer> pr);
+    public:
+        LevelEditor(jnr::Config& config, jnr::Camera cam, std::shared_ptr<jnr::LevelT> level, std::shared_ptr<jnr::PrimitiveRenderer> pr);
         ~LevelEditor();
 
         void render(float delta, float catchup, glm::ivec2 screensize);
         bool onGui();
 
         jnr::Camera& getCam();
-    private:
 
     };
+
+
 }
 
