@@ -8,8 +8,12 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_USE_HYBRID_HPG ON CACHE BOOL "" FORCE)
 
+set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
+
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/resourcemanager)
+add_subdirectory(libs/flatbuffers ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build EXCLUDE_FROM_ALL)
 
 add_compile_definitions(_USE_MATH_DEFINES)
 file(COPY "libs/creature-runtime/MeshBone.h" "libs/creature-runtime/CreatureModule.h" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/libs/creature-runtime/include/")
@@ -50,7 +54,7 @@ rm_embed_resources(RESOURCES ${all_RES_rel})
 
 add_executable(JumpAndRun ${all_SRCS} ${RESOURCES})
 
-target_link_libraries(JumpAndRun glfw glad imgui gason creature-runtime)
+target_link_libraries(JumpAndRun glfw glad imgui gason creature-runtime flatbuffers)
 
 set (source "${CMAKE_SOURCE_DIR}/assets")
 set (destination "${CMAKE_CURRENT_BINARY_DIR}/assets")

@@ -30,3 +30,7 @@
 	path = libs/cpp-colors
 	url = https://github.com/gchudnov/cpp-colors.git
 	branch = master
+[submodule "flatbuffers"]
+	path = libs/flatbuffers
+	url = https://github.com/google/flatbuffers.git
+	branch = master
