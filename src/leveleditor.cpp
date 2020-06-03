@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "physics.h"
 #include "mixed.h"
+#include "gui/guihelper.h"
 
 using namespace glm;
 
@@ -23,8 +24,12 @@ glm::vec2 toWorldSpace(jnr::Camera& cam, ImVec2 v){
     return clicpos;
 }
 
-jnr::LevelEditor::LevelEditor(jnr::Camera c, std::shared_ptr<jnr::Level> l) : cam(c), level(std::move(l)) {
+jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::Level> l) : config(con), cam(c), level(std::move(l)) {
+    grid = getOrDefault(config["editor"]["grid"], 0);
+}
 
+jnr::LevelEditor::~LevelEditor() {
+    config["editor"]["grid"] = grid;
 }
 
 void jnr::LevelEditor::update(float timestep) {
@@ -136,10 +141,16 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
     level->draw(0, 0, cam);
 }
 
-void jnr::LevelEditor::ongui() {
-    ImGui::Text("Here are going to be tools!");
-    ImGui::InputInt("Grid", &grid, 1, 1);
-    grid = max(0, grid);
+bool jnr::LevelEditor::onGui() {
+    bool open = true;
+    guihelper::beginSaved(config["ui"]["editor"],"Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+        ImGui::Text("Here are going to be tools!");
+        ImGui::InputInt("Grid", &grid, 1, 1);
+        grid = max(0, grid);
+    }
+    ImGui::End();
+    return open;
 }
 
 jnr::Camera &jnr::LevelEditor::getCam() {

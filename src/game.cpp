@@ -83,7 +83,7 @@ Game::~Game() = default;
 void Game::ongui() {
     static bool settings = false;
     static bool demo = false;
-    guihelper::beginInfoOverlay(config);
+    guihelper::beginInfoOverlay(config["ui"]["overlay"]);
     {
         ImGui::Text("fps: %.1f", ImGui::GetIO().Framerate);
         player.ongui(jnr::INFO);
@@ -92,7 +92,7 @@ void Game::ongui() {
             if (editor)
                 editor.reset();
             else
-                editor = std::make_unique<LevelEditor>(cam, level);
+                editor = std::make_unique<LevelEditor>(config, cam, level);
         }
         ImGui::SameLine();
         if (ImGui::Button("Settings"))
@@ -104,7 +104,7 @@ void Game::ongui() {
     ImGui::End();
 
     if(settings) {
-        ImGui::Begin("Settings", &settings, ImGuiWindowFlags_AlwaysAutoResize);
+        guihelper::beginSaved(config["ui"]["settings"], "Settings", &settings, ImGuiWindowFlags_AlwaysAutoResize);
         //ImGui::SetWindowSize(ImVec2(800, 200));
         if (ImGui::CollapsingHeader("Graphics                             ")) {
             ConfigPtr<int> vsync(config, config["display"]["vsync"]);
@@ -140,11 +140,7 @@ void Game::ongui() {
     if (demo)
         ImGui::ShowDemoWindow(&demo);
     if(editor){
-        bool e_open = true;
-        ImGui::Begin("Editor", &e_open, ImGuiWindowFlags_AlwaysAutoResize);
-        editor->ongui();
-        ImGui::End();
-        if(!e_open)
+        if(!editor->onGui())
             editor.reset();
     }
 }

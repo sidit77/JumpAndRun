@@ -12,9 +12,6 @@ toml::Value getDefaultConfig(){
     result["display"]["w"] = 1280;
     result["display"]["h"] = 720;
 
-    result["ui"]["overlay"]["corner"] = 0;
-    result["ui"]["overlay"]["x"] = 10.0;
-    result["ui"]["overlay"]["y"] = 10.0;
     return result;
 }
 

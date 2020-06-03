@@ -1,8 +1,28 @@
 #include <imgui.h>
 #include "guihelper.h"
 
-void jnr::guihelper::beginInfoOverlay(Config& config) {
-    int corner = config["ui"]["overlay"]["corner"].as<int>();
+void jnr::guihelper::beginSaved(toml::Value &loc, const std::string& title, bool *open, ImGuiWindowFlags flags) {
+    if(loc.has("x") && loc.has("x")){
+        ImGui::SetNextWindowPos(ImVec2(
+                loc["x"].as<double>(),
+                loc["y"].as<double>()), ImGuiCond_Once);
+    }
+    if(loc.has("w") && loc.has("h")){
+        ImGui::SetNextWindowSize(ImVec2(
+                loc["w"].as<double>(),
+                loc["h"].as<double>()), ImGuiCond_Once);
+    }
+    ImGui::Begin(title.c_str(), open, flags);
+    ImVec2 pos = ImGui::GetWindowPos();
+    loc["x"] = pos.x;
+    loc["y"] = pos.y;
+    ImVec2 size = ImGui::GetWindowSize();
+    loc["w"] = size.x;
+    loc["h"] = size.y;
+}
+
+void jnr::guihelper::beginInfoOverlay(toml::Value& loc) {
+    int corner = getOrDefault(loc["corner"], 0);
     const float DISTANCE = 10.0f;
     ImGuiIO &io = ImGui::GetIO();
     if (corner != 4) {
@@ -17,25 +37,22 @@ void jnr::guihelper::beginInfoOverlay(Config& config) {
             ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
     if (corner != 4)
         window_flags |= ImGuiWindowFlags_NoMove;
+
+    if(corner == 4)
+        beginSaved(loc, "Info-Overlay", NULL, window_flags);
     else
-        ImGui::SetNextWindowPos(ImVec2(
-                config["ui"]["overlay"]["x"].as<double>(),
-                config["ui"]["overlay"]["y"].as<double>()), ImGuiCond_Once);
-    ImGui::Begin("Info-Overlay", NULL, window_flags);
-    if(corner == 4){
-        ImVec2 pos = ImGui::GetWindowPos();
-        config["ui"]["overlay"]["x"] = pos.x;
-        config["ui"]["overlay"]["y"] = pos.y;
-    }
+        ImGui::Begin("Info-Overlay", NULL, window_flags);
+
     if (ImGui::BeginPopupContextWindow()) {
-        if (ImGui::MenuItem("Custom", NULL, corner == 4)) config["ui"]["overlay"]["corner"] = 4;
-        if (ImGui::MenuItem("Top-left", NULL, corner == 0)) config["ui"]["overlay"]["corner"] = 0;
-        if (ImGui::MenuItem("Top-right", NULL, corner == 1)) config["ui"]["overlay"]["corner"] = 1;
-        if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) config["ui"]["overlay"]["corner"] = 2;
-        if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) config["ui"]["overlay"]["corner"] = 3;
+        if (ImGui::MenuItem("Custom", NULL, corner == 4)) loc["corner"] = 4;
+        if (ImGui::MenuItem("Top-left", NULL, corner == 0)) loc["corner"] = 0;
+        if (ImGui::MenuItem("Top-right", NULL, corner == 1)) loc["corner"] = 1;
+        if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) loc["corner"] = 2;
+        if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) loc["corner"] = 3;
         ImGui::EndPopup();
     }
 }
+
 
 void jnr::guihelper::setupStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
@@ -72,3 +89,4 @@ void jnr::guihelper::setupStyle() {
 
     style.Alpha = 0.9f;
 }
+

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm.hpp>
+#include <toml/toml.h>
 
 namespace jnr {
 
@@ -30,5 +31,14 @@ namespace jnr {
     enum GuiSection{
         INFO, GRAPHICS, DEBUG
     };
+
+    template<typename T>
+    T getOrDefault(toml::Value& loc, T def, bool write = true){
+        if(loc.is<T>())
+            return loc.as<T>();
+        if(write)
+            loc = def;
+        return def;
+    }
 
 }
