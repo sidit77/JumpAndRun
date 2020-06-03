@@ -116,6 +116,7 @@ int main() {
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+            glfwSwapInterval(config["display"]["vsync"].as<int>());
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
@@ -127,8 +128,6 @@ int main() {
 }
 
 void configureWindow(GLFWwindow* window, jnr::Config& conf){
-    glfwSwapInterval(conf["display"]["vsync"].as<int>());
-
     if(conf["display"]["fullscreen"].as<bool>()) {
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
