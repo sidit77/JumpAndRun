@@ -32,10 +32,7 @@ jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<j
 
 jnr::LevelEditor::~LevelEditor() {
     config["editor"]["grid"] = grid;
-}
-
-void jnr::LevelEditor::update(float timestep) {
-
+    level->rebuildMesh();
 }
 
 inline float snapToClosest(float v, float space){
@@ -63,29 +60,13 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
         cam.scale = max(cam.scale - io.MouseWheel * 10 * (cam.scale / 200), 10.0f);
     cam.update();
 
-    float spacing = 1;
-    if(grid != 0){
-        spacing = 1024.0f / pow(2, grid);
-        colors::color c((uint32)colors::dotnet::known_color::antique_white);
-        c.a = 60;
-        for(float x = snapToGrid(cam.position.x - cam.scale * cam.aspect, spacing, true);
-        x <= snapToGrid(cam.position.x + cam.scale * cam.aspect, spacing,false); x += spacing){
-            primitiveRenderer->drawLine(
-                    vec2(x, cam.position.y - cam.scale),
-                    vec2(x, cam.position.y + cam.scale), c,1.5f);
-        }
-        for(float y = snapToGrid(cam.position.y - cam.scale, spacing, true);
-            y <= snapToGrid(cam.position.y + cam.scale, spacing,false); y += spacing){
-            primitiveRenderer->drawLine(
-                    vec2(cam.position.x - cam.scale * cam.aspect, y),
-                    vec2(cam.position.x + cam.scale * cam.aspect, y), c, 1.5f);
-        }
-    }
+    float spacing = 1024.0f / pow(2, grid);
 
     if(!io.WantCaptureMouse){
+        if(io.MouseClicked[ImGuiMouseButton_Left])
+            clickPos[ImGuiMouseButton_Left] = toWorldSpace(cam, io.MousePos);
         if(io.MouseDown[ImGuiMouseButton_Left] || io.MouseReleased[ImGuiMouseButton_Left]){
-            //convert on click (camera movement)
-            vec2 clickedpos = toWorldSpace(cam, io.MouseClickedPos[ImGuiMouseButton_Left]);
+            vec2 clickedpos = clickPos[ImGuiMouseButton_Left];
             vec2 releasepos = toWorldSpace(cam, io.MousePos);
             if(grid != 0){
                 clickedpos = snapToGrid(clickedpos, spacing, clickedpos - releasepos);
@@ -110,14 +91,35 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
             level->hitboxes.erase(std::remove_if(level->hitboxes.begin(),
                                                  level->hitboxes.end(),
                                                  [&pointaabb](const AABB& aabb){return jnr::AABBCheck(pointaabb, aabb);}), level->hitboxes.end());
-            level->rebuildMesh();
         }
     }
 
+    {
+        colors::color fill_color(0xF0006EAB);
+        colors::color line_color(0xFF00293F);
+        for (const AABB &box : level->hitboxes) {
+            primitiveRenderer->drawAABB(box.low, box.high, fill_color, 0.0f);
+            primitiveRenderer->drawAABBOutlineP(box.low, box.high, line_color, 0.1f, 2);
+        }
+    }
 
+    if(grid != 0){
+        colors::color c((uint32)colors::dotnet::known_color::antique_white);
+        c.a = 60;
+        for(float x = snapToGrid(cam.position.x - cam.scale * cam.aspect, spacing, true);
+            x <= snapToGrid(cam.position.x + cam.scale * cam.aspect, spacing,false); x += spacing){
+            primitiveRenderer->drawLine(
+                    vec2(x, cam.position.y - cam.scale),
+                    vec2(x, cam.position.y + cam.scale), c,1.5f);
+        }
+        for(float y = snapToGrid(cam.position.y - cam.scale, spacing, true);
+            y <= snapToGrid(cam.position.y + cam.scale, spacing,false); y += spacing){
+            primitiveRenderer->drawLine(
+                    vec2(cam.position.x - cam.scale * cam.aspect, y),
+                    vec2(cam.position.x + cam.scale * cam.aspect, y), c, 1.5f);
+        }
+    }
 
-
-    level->draw(0, 0, cam);
 }
 
 bool jnr::LevelEditor::onGui() {

@@ -27,6 +27,8 @@ namespace jnr {
         void drawLine(glm::vec2 p1, glm::vec2 p2, colors::color c, float z = -0.4f);
 
         void drawAABB(glm::vec2 p1, glm::vec2 p2, colors::color c, float z = -0.4f);
+        void drawAABBOutline(glm::vec2 p1, glm::vec2 p2, colors::color c, float z = -0.4f);
+        void drawAABBOutlineP(glm::vec2 p1, glm::vec2 p2, colors::color c, float z = -0.4f, float width = 4);
 
         void drawQuad(glm::vec2 pos, glm::vec2 size, colors::color c, float z = -0.4f, glm::vec2 pivot = glm::vec2(0,0));
 

@@ -21,15 +21,15 @@
 * ~~Figure out a save format for config files~~
 * ~~Proper screen resize events and maybe windowless fullscreen~~
 * Rename physics functions to sensible things
-* Save settings window pos
+* ~~Save settings window pos~~
 * Save keybindings in config
 
 #### Editor
-* implement modern opengl line renderer
+* ~~implement modern opengl line renderer~~
 * map saving
-* hitbox outlines
+* ~~hitbox outlines~~
 * hitbox moving & resizing
-* save windows pos & grid
+* ~~save windows pos & grid~~
 
 #### Resource Manager
 * central resource list that gets loaded during startup

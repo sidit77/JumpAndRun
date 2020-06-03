@@ -36,6 +36,7 @@ CreatureRenderer::CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_p
 }
 
 void CreatureRenderer::draw(glm::vec2 pos, float scale, const Camera &cam) {
+    glDepthFunc(GL_LEQUAL);
     vao.bind();
     program.bind();
     texture->bind(GL_TEXTURE_2D, GL_TEXTURE0);
@@ -46,4 +47,5 @@ void CreatureRenderer::draw(glm::vec2 pos, float scale, const Camera &cam) {
     glNamedBufferData(col_buffer.id, creature->GetTotalNumPoints() * 4 * sizeof(glm::uint8), creature->GetRenderColours(), GL_STREAM_DRAW);
     ind_buffer.bind(GL_ELEMENT_ARRAY_BUFFER);
     glDrawElements(GL_TRIANGLES, creature->GetTotalNumIndices(), GL_UNSIGNED_INT, 0);
+    glDepthFunc(GL_LESS);
 }
