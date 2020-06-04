@@ -11,6 +11,7 @@
 * ~~fix physics bug~~
 * short lockout after walljump?
 * keep an internal, unclamped version of `vel`?
+* base wall preference on looking direction
 
 ### Engine
 #### General

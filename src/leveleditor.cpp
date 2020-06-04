@@ -6,6 +6,7 @@
 #include <gtx/string_cast.hpp>
 #include <algorithm>
 #include <cpp-colors/impl/constants_impl.h>
+#include <imgui_internal.h>
 #include "physics.h"
 #include "mixed.h"
 #include "gui/guihelper.h"
@@ -25,21 +26,14 @@ glm::vec2 toWorldSpace(jnr::Camera& cam, ImVec2 v){
     return clicpos;
 }
 
-jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::LevelT> l, std::shared_ptr<PrimitiveRenderer> pr)
+jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::LevelWrapper> l, std::shared_ptr<PrimitiveRenderer> pr)
 : config(con), cam(c), level(std::move(l)), primitiveRenderer(std::move(pr)) {
     grid = getOrDefault(config["editor"]["grid"], 0);
 }
 
 jnr::LevelEditor::~LevelEditor() {
     config["editor"]["grid"] = grid;
-    std::ofstream file;
-    file.open(config["level"]["name"].as<std::string>(), std::ios::binary | std::ios::out);
-    if(file.is_open()){
-        flatbuffers::FlatBufferBuilder fbb;
-        fbb.Finish(Level::Pack(fbb, level.get()));
-        file.write((char*)fbb.GetBufferPointer(), fbb.GetSize());
-        file.close();
-    }
+    //level->save();
     //level->rebuildMesh();
 }
 
@@ -84,7 +78,7 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
             vec2 high = glm::max(clickedpos, releasepos);
 
             if(io.MouseReleased[ImGuiMouseButton_Left] && low.x - high.x != 0 && low.y - high.y != 0) {
-                level->hitboxes.emplace_back(AABB{glm::min(clickedpos, releasepos), glm::max(clickedpos, releasepos)});
+                level->get(true).hitboxes.emplace_back(AABB{glm::min(clickedpos, releasepos), glm::max(clickedpos, releasepos)});
                 //level->rebuildMesh();
             }
 
@@ -96,16 +90,20 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
         if(io.MouseReleased[ImGuiMouseButton_Right]){
             vec2 releasepos = toWorldSpace(cam, io.MousePos);
             AABB pointaabb{releasepos, releasepos};
-            level->hitboxes.erase(std::remove_if(level->hitboxes.begin(),
-                                                 level->hitboxes.end(),
-                                                 [&pointaabb](const AABB& aabb){return jnr::AABBCheck(pointaabb, aabb);}), level->hitboxes.end());
+            if(checkAABB(vec2(0), pointaabb, level->get().hitboxes)){
+                std::vector<AABB>& hbs = level->get(true).hitboxes;
+                hbs.erase(std::remove_if(hbs.begin(), hbs.end(), [&pointaabb](const AABB& aabb){
+                    return jnr::AABBCheck(pointaabb, aabb);
+                }), hbs.end());
+            }
+
         }
     }
 
     {
         colors::color fill_color(0xF0006EAB);
         colors::color line_color(0xFF00293F);
-        for (const AABB &box : level->hitboxes) {
+        for (const AABB &box : level->get().hitboxes) {
             primitiveRenderer->drawAABB(box.low, box.high, fill_color, 0.0f);
             primitiveRenderer->drawAABBOutlineP(box.low, box.high, line_color, 0.1f, 2);
         }
@@ -135,6 +133,11 @@ bool jnr::LevelEditor::onGui() {
     guihelper::beginSaved(config["ui"]["editor"],"Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("Here are going to be tools!");
+        if(guihelper::DisabledButton("Reload", !level->hasChanges() || !level->onDisk()))
+            level->reload();
+        ImGui::SameLine();
+        if(guihelper::DisabledButton("Save", !level->hasChanges()))
+            level->save();
         ImGui::InputInt("Grid", &grid, 1, 1);
         grid = max(0, grid);
     }

@@ -10,29 +10,6 @@
 using namespace jnr;
 using namespace glm;
 
-AABB getPlatform(float x, float y, float w, float h){
-    return AABB{vec2(x,y), vec2(x+w,y+h)};
-}
-
-LevelT* getDefaultLevel(){
-    auto level = std::make_unique<LevelT>();
-    level->name = "Demo";
-    level->hitboxes.push_back(getPlatform(0   , 0  , 1500, 10 ));
-    level->hitboxes.push_back(getPlatform(1490, 10 , 10  , 700));
-    level->hitboxes.push_back(getPlatform(0   , 10 , 10  , 700));
-    level->hitboxes.push_back(getPlatform(60  , 500, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(200 , 350, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(300 , 200, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(400 , 600, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(600 , 100, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(650 , 270, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(900 , 400, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(920 , 100, 200 , 30 ));
-    level->hitboxes.push_back(getPlatform(1200, 200, 150 , 30 ));
-    level->hitboxes.push_back(getPlatform(1340, 300, 10  , 400));
-    return level.release();
-}
-
 Game::Game(Config& c, GLFWwindow* w) :
         config(c),
         debugOptions(),
@@ -40,21 +17,9 @@ Game::Game(Config& c, GLFWwindow* w) :
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         primitiveRenderer(std::make_shared<PrimitiveRenderer>()),
-        lastInput()
+        lastInput(),
+        level(std::make_shared<LevelWrapper>(getOrDefault<std::string>(config["level"]["name"], "assets/levels/level1.dat")))
 {
-    std::ifstream file;
-    file.open(getOrDefault<std::string>(config["level"]["name"], "assets/levels/level1.dat"), std::ios::binary | std::ios::in);
-    if(file.is_open()) {
-        file.seekg(0, std::ios::end);
-        int length = file.tellg();
-        file.seekg(0, std::ios::beg);
-        char *data = new char[length];
-        file.read(data, length);
-        file.close();
-        level = std::shared_ptr<LevelT>(GetLevel(data)->UnPack());
-    }else{
-        level = std::shared_ptr<LevelT>(getDefaultLevel());
-    }
     player.setLevel(level);
 }
 
@@ -99,10 +64,11 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
         {
             colors::color fill_color(0xF0006EAB);
             colors::color line_color(0xFF00293F);
-            for (const AABB &box : level->hitboxes) {
+            for (const AABB &box : level->get().hitboxes) {
                 primitiveRenderer->drawAABB(box.low, box.high, fill_color, 0.0f);
                 primitiveRenderer->drawAABBOutlineP(box.low, box.high, line_color, 0.1f, 2);
             }
+            primitiveRenderer->drawQuad(vec2(600, 300) + cam.position / 4.0f, vec2(800,300), line_color, -1.0f, vec2(0.5));
         }
 
         if(debugOptions.showPlayerHitbox)

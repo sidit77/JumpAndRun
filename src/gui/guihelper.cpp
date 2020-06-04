@@ -1,4 +1,5 @@
 #include <imgui.h>
+#include <imgui_internal.h>
 #include "guihelper.h"
 
 void jnr::guihelper::beginSaved(toml::Value &loc, const std::string& title, bool *open, ImGuiWindowFlags flags) {
@@ -53,6 +54,18 @@ void jnr::guihelper::beginInfoOverlay(toml::Value& loc) {
     }
 }
 
+bool jnr::guihelper::DisabledButton(const char* label, bool disabled, const ImVec2& size){
+    if(disabled){
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+    }
+    bool result = ImGui::Button(label, size);
+    if(disabled){
+        ImGui::PopItemFlag();
+        ImGui::PopStyleVar();
+    }
+    return result;
+}
 
 void jnr::guihelper::setupStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
