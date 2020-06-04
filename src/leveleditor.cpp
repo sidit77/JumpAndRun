@@ -53,6 +53,15 @@ vec2 snapToGrid(vec2 v, float space, vec2 dir){
     return vec2(snapToGrid(v.x, space, dir.x < 0),snapToGrid(v.y, space, dir.y < 0));
 }
 
+void snapshot(jnr::LevelWrapper& wrapper, flatbuffers::FlatBufferBuilder& fbb){
+    fbb.Clear();
+    fbb.Finish(jnr::Level::Pack(fbb, &wrapper.get(false)));
+}
+
+void restore(jnr::LevelWrapper& wrapper, flatbuffers::FlatBufferBuilder& fbb){
+    jnr::GetLevel(fbb.GetBufferPointer())->UnPackTo(&wrapper.get(true));
+}
+
 void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize) {
     ImGuiIO& io = ImGui::GetIO();
     cam.aspect = (float) screensize.x / screensize.y;
@@ -78,6 +87,7 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
             vec2 high = glm::max(clickedpos, releasepos);
 
             if(io.MouseReleased[ImGuiMouseButton_Left] && low.x - high.x != 0 && low.y - high.y != 0) {
+                snapshot(*level, undoBuffer.add());
                 level->get(true).hitboxes.emplace_back(AABB{glm::min(clickedpos, releasepos), glm::max(clickedpos, releasepos)});
                 //level->rebuildMesh();
             }
@@ -90,6 +100,7 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
         if(io.MouseReleased[ImGuiMouseButton_Right]){
             vec2 releasepos = toWorldSpace(cam, io.MousePos);
             if(physics::PointVsBoxes(releasepos, level->get().hitboxes)){
+                snapshot(*level, undoBuffer.add());
                 std::vector<AABB>& hbs = level->get(true).hitboxes;
                 hbs.erase(std::remove_if(hbs.begin(), hbs.end(), [&releasepos](const AABB& aabb){
                     return physics::PointVsBox(releasepos, aabb);
@@ -132,11 +143,23 @@ bool jnr::LevelEditor::onGui() {
     guihelper::beginSaved(config["ui"]["editor"],"Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("Here are going to be tools!");
-        if(guihelper::DisabledButton("Reload", !level->hasChanges() || !level->onDisk()))
+        if(guihelper::DisabledButton("Reload", level->hasChanges() && level->onDisk())){
             level->reload();
+            undoBuffer.clear();
+        }
         ImGui::SameLine();
-        if(guihelper::DisabledButton("Save", !level->hasChanges()))
+        if(guihelper::DisabledButton("Save", level->hasChanges()))
             level->save();
+        if(guihelper::DisabledButton("Undo", undoBuffer.canUndo())){
+            if(!undoBuffer.canRedo()){
+                snapshot(*level, undoBuffer.add());
+                undoBuffer.undo();
+            }
+            restore(*level, undoBuffer.undo());
+        }
+        ImGui::SameLine();
+        if(guihelper::DisabledButton("Redo", undoBuffer.canRedo()))
+            restore(*level, undoBuffer.redo());
         ImGui::InputInt("Grid", &grid, 1, 1);
         grid = max(0, grid);
     }

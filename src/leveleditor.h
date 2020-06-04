@@ -4,12 +4,14 @@
 #include "rendering/primitiverenderer.h"
 #include "level.h"
 #include "util/config.h"
+#include "util/undobuffer.h"
 
 namespace jnr {
     class LevelEditor : private NonCopyable {
     private:
         jnr::Config& config;
         jnr::Camera& cam;
+        jnr::UndoBuffer<flatbuffers::FlatBufferBuilder, 10> undoBuffer;
         std::shared_ptr<jnr::LevelWrapper> level;
         std::shared_ptr<jnr::PrimitiveRenderer> primitiveRenderer;
 
