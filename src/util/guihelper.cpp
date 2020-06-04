@@ -54,7 +54,7 @@ void jnr::guihelper::beginInfoOverlay(toml::Value& loc) {
     }
 }
 
-bool jnr::guihelper::DisabledButton(const char* label, bool enabled, const ImVec2& size){
+bool jnr::guihelper::Button(const char* label, bool enabled, const ImVec2& size){
     if(!enabled){
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);

@@ -3,13 +3,11 @@
 #include <utility>
 #include <imgui.h>
 #include <iostream>
-#include <gtx/string_cast.hpp>
 #include <algorithm>
 #include <cpp-colors/impl/constants_impl.h>
-#include <imgui_internal.h>
-#include "physics.h"
 #include "util/mixedmath.h"
 #include "util/guihelper.h"
+#include "editor/keyhelper.h"
 
 using namespace glm;
 
@@ -65,7 +63,7 @@ void restore(jnr::LevelWrapper& wrapper, flatbuffers::FlatBufferBuilder& fbb){
 void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize) {
     ImGuiIO& io = ImGui::GetIO();
     cam.aspect = (float) screensize.x / screensize.y;
-    if (!io.WantCaptureMouse && io.MouseDown[ImGuiMouseButton_Middle])
+    if (!io.WantCaptureMouse && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
         cam.position += convert(io.MouseDelta) * vec2(-1, 1) * ((cam.scale * 2) / io.DisplaySize.y);
     if(!ImGui::IsAnyWindowHovered())
         cam.scale = max(cam.scale - io.MouseWheel * 10 * (cam.scale / 200), 10.0f);
@@ -74,11 +72,11 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
     float spacing = 1024.0f / pow(2, grid);
 
     if(!io.WantCaptureMouse){
-        if(io.MouseClicked[ImGuiMouseButton_Left])
-            clickPos[ImGuiMouseButton_Left] = toWorldSpace(cam, io.MousePos);
-        if(io.MouseDown[ImGuiMouseButton_Left] || io.MouseReleased[ImGuiMouseButton_Left]){
+        if(ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            clickPos[ImGuiMouseButton_Left] = toWorldSpace(cam, ImGui::GetMousePos());
+        if(ImGui::IsMouseDown(ImGuiMouseButton_Left)|| ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
             vec2 clickedpos = clickPos[ImGuiMouseButton_Left];
-            vec2 releasepos = toWorldSpace(cam, io.MousePos);
+            vec2 releasepos = toWorldSpace(cam, ImGui::GetMousePos());
             if(grid != 0){
                 clickedpos = snapToGrid(clickedpos, spacing, clickedpos - releasepos);
                 releasepos = snapToGrid(releasepos, spacing, releasepos - clickedpos);
@@ -86,18 +84,18 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
             vec2 low = glm::min(clickedpos, releasepos);
             vec2 high = glm::max(clickedpos, releasepos);
 
-            if(io.MouseReleased[ImGuiMouseButton_Left] && low.x - high.x != 0 && low.y - high.y != 0) {
+            if(ImGui::IsMouseReleased(ImGuiMouseButton_Left) && low.x - high.x != 0 && low.y - high.y != 0) {
                 snapshot(*level, undoBuffer.add());
                 level->get(true).hitboxes.emplace_back(AABB{glm::min(clickedpos, releasepos), glm::max(clickedpos, releasepos)});
                 //level->rebuildMesh();
             }
 
             primitiveRenderer->drawAABB(low, high, colors::colorF(0.3f, 0.42f,0.42f,1.00f), 2.0f);
-            primitiveRenderer->drawQuad(clickedpos, vec2(5,5), colors::colorF(0.3f,0.92f,0.42f,1.00f), 2.0f, vec2(0.5,0.5));
-            primitiveRenderer->drawQuad(releasepos, vec2(5,5), colors::colorF(0.3f, 0.92f,0.42f,1.00f), 2.0f, vec2(0.5,0.5));
+            primitiveRenderer->drawQuad(clickedpos, vec2(5 * (cam.scale / camera::default_scale)), colors::colorF(0.3f,0.92f,0.42f,1.00f), 2.0f, vec2(0.5,0.5));
+            primitiveRenderer->drawQuad(releasepos, vec2(5 * (cam.scale / camera::default_scale)), colors::colorF(0.3f, 0.92f,0.42f,1.00f), 2.0f, vec2(0.5,0.5));
 
         }
-        if(io.MouseReleased[ImGuiMouseButton_Right]){
+        if(ImGui::IsMouseReleased(ImGuiMouseButton_Right)){
             vec2 releasepos = toWorldSpace(cam, io.MousePos);
             if(physics::PointVsBoxes(releasepos, level->get().hitboxes)){
                 snapshot(*level, undoBuffer.add());
@@ -109,7 +107,6 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
 
         }
     }
-
     {
         colors::color fill_color(0xF0006EAB);
         colors::color line_color(0xFF00293F);
@@ -138,19 +135,24 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
 
 }
 
+bool KeyButton(const char* label, bool enabled, jnr::MKey key){
+    return jnr::guihelper::Button(label, enabled) || (enabled && jnr::KeyHelper::isKeyPressed(key));
+}
+
 bool jnr::LevelEditor::onGui() {
     bool open = true;
     guihelper::beginSaved(config["ui"]["editor"],"Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
     {
+        ImGui::Value("Key", KeyHelper::isKeyDown(MKey::NONE));
         ImGui::Text("Here are going to be tools!");
-        if(guihelper::DisabledButton("Reload", level->hasChanges() && level->onDisk())){
+        if(KeyButton("Reload", level->hasChanges() && level->onDisk(),MKey::NONE)){
             level->reload();
             undoBuffer.clear();
         }
         ImGui::SameLine();
-        if(guihelper::DisabledButton("Save", level->hasChanges()))
+        if(KeyButton("Save", level->hasChanges(), MKey::CONTROL | Key::S))
             level->save();
-        if(guihelper::DisabledButton("Undo", undoBuffer.canUndo())){
+        if(KeyButton("Undo", undoBuffer.canUndo(), MKey::CONTROL | Key::Y)){
             if(!undoBuffer.canRedo()){
                 snapshot(*level, undoBuffer.add());
                 undoBuffer.undo();
@@ -158,7 +160,7 @@ bool jnr::LevelEditor::onGui() {
             restore(*level, undoBuffer.undo());
         }
         ImGui::SameLine();
-        if(guihelper::DisabledButton("Redo", undoBuffer.canRedo()))
+        if(KeyButton("Redo", undoBuffer.canRedo(), MKey::CONTROL | Key::R))
             restore(*level, undoBuffer.redo());
         ImGui::InputInt("Grid", &grid, 1, 1);
         grid = max(0, grid);

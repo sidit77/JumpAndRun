@@ -5,7 +5,7 @@
 
 namespace jnr {
 
-    enum CollisionFace{
+    enum class CollisionFace{
         UP, DOWN, LEFT, RIGHT
     };
 

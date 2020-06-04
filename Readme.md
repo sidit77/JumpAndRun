@@ -2,7 +2,7 @@
 ## TODO list
 ### Gameplay
 * ~~horizontal velocity~~
-* ~~ability to jump for ~0.25s after leaving platform~~
+* ~~ability to jump for 0.25s after leaving platform~~
 * ~~ability to control jump height~~
 * ~~horizontal sleep~~
 * ~~use callbacks for jump~~
@@ -32,6 +32,7 @@
 * ~~hitbox outlines~~
 * hitbox moving & resizing
 * ~~save windows pos & grid~~
+* add option to lock player to current position
 
 #### Resource Manager
 * central resource list that gets loaded during startup

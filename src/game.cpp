@@ -1,6 +1,5 @@
 #include <glad/glad.h>
 #include "game.h"
-#include "util/guihelper.h"
 #include <imgui.h>
 #include <iostream>
 #include <memory>
@@ -60,7 +59,7 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
     if(!editor_open){
         cam.aspect = (float)screensize.x / screensize.y;
         cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
-        cam.scale = glm::mix(cam.scale, 350.0f, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
+        cam.scale = glm::mix(cam.scale, camera::default_scale, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
         cam.update();
 
         {
