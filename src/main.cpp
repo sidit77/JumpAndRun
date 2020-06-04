@@ -5,7 +5,7 @@
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
 #include "game.h"
-#include "gui/guihelper.h"
+#include "util/guihelper.h"
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;

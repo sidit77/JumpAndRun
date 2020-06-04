@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "../../mixed.h"
+#include "../../util/noncopyable.h"
 
 namespace jnr {
     class VertexBuffer : private NonCopyable{

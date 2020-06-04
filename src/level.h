@@ -1,7 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include "mixed.h"
+#include "util/noncopyable.h"
 #include "physics.h"
 
 namespace jnr {

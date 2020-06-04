@@ -1,6 +1,6 @@
 #include <iostream>
 #include "player.h"
-#include "mixed.h"
+#include "util/mixedmath.h"
 #include <limits>
 #include <utility>
 #include <imgui.h>

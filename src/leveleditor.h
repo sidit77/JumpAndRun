@@ -1,10 +1,9 @@
 #pragma once
 
-#include "mixed.h"
 #include "rendering/camera.h"
 #include "rendering/primitiverenderer.h"
 #include "level.h"
-#include "config.h"
+#include "util/config.h"
 
 namespace jnr {
     class LevelEditor : private NonCopyable {

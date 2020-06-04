@@ -5,7 +5,7 @@
 #include <utility>
 #include <string>
 #include <memory>
-#include "../../mixed.h"
+#include "../../util/noncopyable.h"
 
 namespace jnr {
 

@@ -2,17 +2,11 @@
 
 #include <vector>
 #include <GLFW/glfw3.h>
-#include <CreatureModule.h>
 #include "player.h"
-#include "physics.h"
-#include "rendering/camera.h"
-#include "rendering/opengl/shader.h"
-#include "rendering/opengl/buffer.h"
-#include "rendering/opengl/texture.h"
-#include "rendering/creature_renderer.h"
 #include "level.h"
 #include "leveleditor.h"
-#include "config.h"
+#include "util/config.h"
+#include "rendering/camera.h"
 #include "rendering/primitiverenderer.h"
 
 namespace jnr {

@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 #include <string>
-#include "../../mixed.h"
+#include "../../util/noncopyable.h"
 
 namespace jnr{
     class Texture : private NonCopyable{

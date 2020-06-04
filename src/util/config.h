@@ -1,9 +1,18 @@
 #pragma once
 
 #include <toml/toml.h>
-#include "mixed.h"
+#include "noncopyable.h"
 
 namespace jnr{
+
+    template<typename T>
+    T getOrDefault(toml::Value& loc, T def, bool write = true){
+        if(loc.is<T>())
+            return loc.as<T>();
+        if(write)
+            loc = def;
+        return def;
+    }
 
     class Config : private NonCopyable{
     private:

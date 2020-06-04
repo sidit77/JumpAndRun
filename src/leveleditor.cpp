@@ -8,8 +8,8 @@
 #include <cpp-colors/impl/constants_impl.h>
 #include <imgui_internal.h>
 #include "physics.h"
-#include "mixed.h"
-#include "gui/guihelper.h"
+#include "util/mixedmath.h"
+#include "util/guihelper.h"
 
 using namespace glm;
 

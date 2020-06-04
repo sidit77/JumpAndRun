@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cpp-colors/color.h>
+#include <vector>
 #include "opengl/buffer.h"
 #include "opengl/shader.h"
 #include "camera.h"

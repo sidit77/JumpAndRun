@@ -1,6 +1,7 @@
 #include "level.h"
 
 #include <utility>
+#include <fstream>
 
 namespace flatbuffers {
     jnr::LevelVec2 convert(const glm::vec2& v){

@@ -1,6 +1,6 @@
 #include <glad/glad.h>
 #include "game.h"
-#include "gui/guihelper.h"
+#include "util/guihelper.h"
 #include <imgui.h>
 #include <iostream>
 #include <memory>
