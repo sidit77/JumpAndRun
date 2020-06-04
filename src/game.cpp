@@ -20,11 +20,12 @@ Game::Game(Config& c, GLFWwindow* w) :
         lastInput(),
         level(std::make_shared<LevelWrapper>(getOrDefault<std::string>(config["level"]["name"], "assets/levels/level1.dat")))
 {
+    editor_open = false;
     player.setLevel(level);
 }
 
 void Game::update(float timestep) {
-    if(editor)
+    if(editor_open)
         return;
 
     Input input{};
@@ -56,9 +57,10 @@ void Game::update(float timestep) {
 }
 
 void Game::render(float delta, float catchup, glm::ivec2 screensize) {
-    if(!editor){
+    if(!editor_open){
         cam.aspect = (float)screensize.x / screensize.y;
         cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
+        cam.scale = glm::mix(cam.scale, 350.0f, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
         cam.update();
 
         {
@@ -77,13 +79,16 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
         primitiveRenderer->render(cam);
         player.draw(delta, catchup, cam);
     } else {
+        if(!editor)
+            editor = std::make_unique<LevelEditor>(config, cam, level, primitiveRenderer);
+
         editor->render(delta, catchup, screensize);
 
         if(debugOptions.showPlayerHitbox)
             player.drawDebug(0, 0, *primitiveRenderer);
 
-        primitiveRenderer->render(editor->getCam());
-        player.draw(0, 0, editor->getCam());
+        primitiveRenderer->render(cam);
+        player.draw(0, 0, cam);
     }
 
 }
@@ -98,11 +103,8 @@ void Game::ongui() {
         ImGui::Text("fps: %.1f", ImGui::GetIO().Framerate);
         player.ongui(jnr::INFO);
         ImGui::Separator();
-        if (ImGui::Button(!editor ? "Open Editor" : "Quit Editor")) {
-            if (editor)
-                editor.reset();
-            else
-                editor = std::make_unique<LevelEditor>(config, cam, level, primitiveRenderer);
+        if (ImGui::Button(!editor_open ? "Open Editor" : "Quit Editor")) {
+            editor_open = !editor_open;
         }
         ImGui::SameLine();
         if (ImGui::Button("Settings"))
@@ -149,9 +151,8 @@ void Game::ongui() {
     }
     if (demo)
         ImGui::ShowDemoWindow(&demo);
-    if(editor){
-        if(!editor->onGui())
-            editor.reset();
+    if(editor_open && editor){
+        editor_open = editor->onGui();
     }
 }
 

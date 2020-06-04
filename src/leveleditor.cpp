@@ -26,7 +26,7 @@ glm::vec2 toWorldSpace(jnr::Camera& cam, ImVec2 v){
     return clicpos;
 }
 
-jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera c, std::shared_ptr<jnr::LevelWrapper> l, std::shared_ptr<PrimitiveRenderer> pr)
+jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera& c, std::shared_ptr<jnr::LevelWrapper> l, std::shared_ptr<PrimitiveRenderer> pr)
 : config(con), cam(c), level(std::move(l)), primitiveRenderer(std::move(pr)) {
     grid = getOrDefault(config["editor"]["grid"], 0);
 }
@@ -142,8 +142,4 @@ bool jnr::LevelEditor::onGui() {
     }
     ImGui::End();
     return open;
-}
-
-jnr::Camera &jnr::LevelEditor::getCam() {
-    return cam;
 }

@@ -34,6 +34,7 @@ namespace jnr {
         std::shared_ptr<PrimitiveRenderer> primitiveRenderer;
         std::shared_ptr<LevelWrapper> level;
         std::unique_ptr<LevelEditor> editor;
+        bool editor_open;
         Input lastInput;
     public:
         Game(Config& c, GLFWwindow* w);
