@@ -21,7 +21,7 @@
 * ~~Move Config into Game~~
 * ~~Figure out a save format for config files~~
 * ~~Proper screen resize events and maybe windowless fullscreen~~
-* Rename physics functions to sensible things
+* ~~Rename physics functions to sensible things~~
 * ~~Save settings window pos~~
 * Save keybindings in config
 

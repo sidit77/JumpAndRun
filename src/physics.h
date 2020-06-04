@@ -24,7 +24,13 @@ namespace jnr {
         float position;
     };
 
-    CollisionInfo checkSweptAABB(glm::vec2 pos, glm::vec2 vel, AABB bb, const std::vector<AABB>& staticbb);
-    bool checkAABB(glm::vec2 pos, AABB bb, const std::vector<AABB>& staticbb);
-    bool AABBCheck(AABB bb1, AABB bb2);
+    namespace physics {
+        CollisionInfo MovingBoxVsBoxes(const glm::vec2& pos, const glm::vec2& vel, const AABB& box, const std::vector<AABB>& boxes);
+        bool BoxVsBoxes(const glm::vec2& pos, const AABB& box, const std::vector<AABB>& boxes);
+        bool BoxVsBoxes(const AABB& box, const std::vector<AABB>& boxes);
+        bool BoxVsBox(const AABB& box1, const AABB& box2);
+        bool PointVsBox(const glm::vec2& p, const AABB& box);
+        bool PointVsBoxes(const glm::vec2& p, const std::vector<AABB>& boxes);
+    }
+
 }

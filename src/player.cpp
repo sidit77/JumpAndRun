@@ -142,7 +142,7 @@ void Player::update(float timestep, Input input) {
     float remainingtime = timestep;
     //std::cout << "start (" << to_string(vel) << ")";
     for(int i = 0; i < 10 && remainingtime > timestep * 0.05f; i++) {
-        CollisionInfo info = jnr::checkSweptAABB(pos, vel * remainingtime, hitbox, level->get().hitboxes);
+        CollisionInfo info = physics::MovingBoxVsBoxes(pos, vel * remainingtime, hitbox, level->get().hitboxes);
         if (info.valid) {
             //pos += info.normal * info.depth;
             pos += vel * remainingtime * info.time;
@@ -162,7 +162,7 @@ void Player::update(float timestep, Input input) {
         }
     }
     //std::cout << " > result(" << jnr::checkAABB(pos, hitbox, platforms) << ")" << std::endl;
-    if(jnr::checkAABB(pos, foot_hitbox, level->get().hitboxes)) {
+    if(physics::BoxVsBoxes(pos, foot_hitbox, level->get().hitboxes)) {
         if(abs(force.x) > 10){
             setState(&states::walking);
         } else if(!(*state == states::idle)){
@@ -171,8 +171,8 @@ void Player::update(float timestep, Input input) {
     }else if(vel.y < 0 && !all(state->traits, StateTraits::FALLING))
         setState(&states::falling);
 
-    onLeftWall = jnr::checkAABB(pos, l_arm_hitbox, level->get().hitboxes);
-    onRightWall = jnr::checkAABB(pos, r_arm_hitbox, level->get().hitboxes);
+    onLeftWall = physics::BoxVsBoxes(pos, l_arm_hitbox, level->get().hitboxes);
+    onRightWall = physics::BoxVsBoxes(pos, r_arm_hitbox, level->get().hitboxes);
 
     if(((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)) && all(state->traits, StateTraits::IN_AIR)) // && all(state->traits, StateTraits::FALLING)
         setState(&states::wall_slide);

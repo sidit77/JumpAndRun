@@ -89,11 +89,10 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
         }
         if(io.MouseReleased[ImGuiMouseButton_Right]){
             vec2 releasepos = toWorldSpace(cam, io.MousePos);
-            AABB pointaabb{releasepos, releasepos};
-            if(checkAABB(vec2(0), pointaabb, level->get().hitboxes)){
+            if(physics::PointVsBoxes(releasepos, level->get().hitboxes)){
                 std::vector<AABB>& hbs = level->get(true).hitboxes;
-                hbs.erase(std::remove_if(hbs.begin(), hbs.end(), [&pointaabb](const AABB& aabb){
-                    return jnr::AABBCheck(pointaabb, aabb);
+                hbs.erase(std::remove_if(hbs.begin(), hbs.end(), [&releasepos](const AABB& aabb){
+                    return physics::PointVsBox(releasepos, aabb);
                 }), hbs.end());
             }
 

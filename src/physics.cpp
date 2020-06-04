@@ -5,21 +5,21 @@
 using namespace jnr;
 using namespace glm;
 
-inline AABB move(AABB bb, vec2 pos){
+inline AABB move(const AABB& bb, const vec2& pos){
     AABB result{};
     result.low = bb.low + pos;
     result.high = bb.high + pos;
     return result;
 }
 
-inline AABB getBroadphaseAABB(vec2 vel, AABB bb){
+inline AABB getBroadphaseAABB(const vec2& vel, const AABB& bb){
     AABB result{};
     result.low = bb.low + min(vel, vec2(0,0));
     result.high = bb.high + max(vel, vec2(0,0));
     return result;
 }
 
-CollisionInfo getSweptAABB(AABB bb1, vec2 vel, AABB bb2){
+CollisionInfo getSweptAABB(const AABB& bb1, const vec2& vel, const AABB& bb2){
     vec2 InvEntry, InvExit;
 
     if (vel.x > 0.0f){
@@ -75,7 +75,7 @@ CollisionInfo getSweptAABB(AABB bb1, vec2 vel, AABB bb2){
     return result;
 }
 
-CollisionInfo jnr::checkSweptAABB(vec2 pos, vec2 vel, AABB bb, const std::vector<AABB>& staticbb){
+CollisionInfo jnr::physics::MovingBoxVsBoxes(const glm::vec2& pos, const glm::vec2& vel, const AABB& bb, const std::vector<AABB>& staticbb){
     AABB pbb = move(bb, pos);
     AABB full = getBroadphaseAABB(vel, pbb);
     CollisionInfo info{};
@@ -84,7 +84,7 @@ CollisionInfo jnr::checkSweptAABB(vec2 pos, vec2 vel, AABB bb, const std::vector
     info.valid = false;
     float wt = info.time;
     for(const AABB& sbb : staticbb){
-        if(AABBCheck(full, sbb)){
+        if(BoxVsBox(full, sbb)){
             CollisionInfo ninfo = getSweptAABB(pbb, vel, sbb);
             wt = min(wt, ninfo.time);
             if(ninfo.valid  && ninfo.time < info.time)
@@ -96,17 +96,33 @@ CollisionInfo jnr::checkSweptAABB(vec2 pos, vec2 vel, AABB bb, const std::vector
     return info;
 }
 
-bool jnr::checkAABB(vec2 pos, AABB bb, const std::vector<AABB>& staticbb){
-    AABB pbb = move(bb, pos);
-    for(const AABB& sbb : staticbb){
-        if(AABBCheck(pbb, sbb)){
+bool jnr::physics::BoxVsBoxes(const AABB &box, const std::vector<AABB> &boxes) {
+    for(const AABB& sbb : boxes){
+        if(BoxVsBox(box, sbb)){
             return true;
         }
     }
     return false;
 }
 
-inline bool jnr::AABBCheck(AABB bb1, AABB bb2){
+bool jnr::physics::BoxVsBoxes(const glm::vec2& pos, const AABB& bb, const std::vector<AABB>& staticbb){
+    return BoxVsBoxes(move(bb, pos), staticbb);
+}
+
+bool jnr::physics::BoxVsBox(const AABB& bb1, const AABB& bb2){
     return !(bb1.high.x <= bb2.low.x || bb1.low.x >= bb2.high.x || bb1.high.y <= bb2.low.y || bb1.low.y >= bb2.high.y);
+}
+
+bool jnr::physics::PointVsBox(const vec2 &p, const AABB &box) {
+    return !(p.x <= box.low.x || p.x >= box.high.x || p.y <= box.low.y || p.y >= box.high.y);
+}
+
+bool jnr::physics::PointVsBoxes(const vec2 &p, const std::vector<AABB> &boxes) {
+    for(const AABB& sbb : boxes){
+        if(PointVsBox(p, sbb)){
+            return true;
+        }
+    }
+    return false;
 }
 
