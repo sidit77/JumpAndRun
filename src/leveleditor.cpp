@@ -26,7 +26,7 @@ jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera& c, std::shared_ptr<
 : config(con), cam(c), level(std::move(l)), primitiveRenderer(std::move(pr)) {
     grid = getOrDefault(config["editor"]["grid"], 0);
     editModes.emplace_back(new SelectMode(*this));
-    editModes.emplace_back(new HitboxDrawMode(*this));
+    editModes.emplace_back(new HitboxEditMode(*this));
 
     currentMode = editModes.at(1).get();
 }

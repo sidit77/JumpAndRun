@@ -50,7 +50,7 @@ std::optional<AABB> getGroupAABB(const std::set<AABB*>& group){
     return result;
 }
 
-void jnr::HitboxDrawMode::render() {
+void jnr::HitboxEditMode::render() {
     ImGuiIO& io = ImGui::GetIO();
 
     vec2 mousepos = toWorldSpace(ImGui::GetMousePos());
@@ -171,9 +171,23 @@ void jnr::HitboxDrawMode::render() {
         selected.clear();
     }
 
+    if(!selected.empty() && KeyHelper::isKeyPressed(MKey::CONTROL | Key::D)){
+        saveSnapshot();
+        std::vector<AABB> newset;
+        for(AABB* aabb : selected){
+            newset.emplace_back(
+                    aabb->low + vec2(50, 50) * getScale(),
+                    aabb->high + vec2(50, 50) * getScale());
+        }
+        selected.clear();
+        for(const AABB& aabb : newset){
+            getLevel(true).hitboxes.push_back(aabb);
+        }
+    }
+
 }
 
-void jnr::HitboxDrawMode::onGui() {
+void jnr::HitboxEditMode::onGui() {
     ImGui::Value("Mode", (int)interactionMode);
 }
 

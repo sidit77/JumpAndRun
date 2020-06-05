@@ -29,7 +29,7 @@ namespace jnr {
         virtual void onGui() = 0;
     };
 
-    class HitboxDrawMode : public EditMode {
+    class HitboxEditMode : public EditMode {
     private:
         enum class InteractionMode {
             DRAWING, SELECTING, MOVING
@@ -38,7 +38,7 @@ namespace jnr {
         InteractionMode interactionMode;
         std::set<AABB*> selected;
     public:
-        HitboxDrawMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};
+        HitboxEditMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};
         void render() override;
         void onGui() override;
     };
