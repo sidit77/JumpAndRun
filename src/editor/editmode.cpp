@@ -69,10 +69,6 @@ void jnr::HitboxEditMode::render() {
         clickPos = std::nullopt;
         interactionMode = InteractionMode::DRAWING;
     }
-    if(KeyHelper::isKeyReleased(Key::LEFT_SHIFT)){
-        clickPos = std::nullopt;
-        interactionMode = InteractionMode::SELECTING;
-    }
 
     switch (interactionMode) {
         case InteractionMode::DRAWING:
@@ -92,7 +88,8 @@ void jnr::HitboxEditMode::render() {
                 vec2 low = glm::min(clickedpos, releasepos);
                 vec2 high = glm::max(clickedpos, releasepos);
 
-                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && low.x - high.x != 0 && low.y - high.y != 0) {
+                if ((KeyHelper::isKeyReleased(Key::LEFT_SHIFT) || ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                && low.x - high.x != 0 && low.y - high.y != 0) {
                     saveSnapshot();
                     getLevel(true).hitboxes.emplace_back(AABB{low, high});
                 }
@@ -110,6 +107,17 @@ void jnr::HitboxEditMode::render() {
             }
             break;
         case InteractionMode::SELECTING:
+            if(clickPos && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                for (AABB& aabb : getLevel().hitboxes) {
+                    if (physics::PointVsBox(*clickPos, aabb)){
+                        if(!KeyHelper::isKeyDown(Key::LEFT_CONTROL))
+                            selected.clear();
+                        selected.insert(&aabb);
+                        clickPos = std::nullopt;
+                        break;
+                    }
+                }
+            }
             if(clickPos){
                 vec2 low = glm::min(*clickPos, mousepos);
                 vec2 high = glm::max(*clickPos, mousepos);
@@ -151,6 +159,10 @@ void jnr::HitboxEditMode::render() {
             break;
     }
 
+    if(KeyHelper::isKeyReleased(Key::LEFT_SHIFT)){
+        clickPos = std::nullopt;
+        interactionMode = InteractionMode::SELECTING;
+    }
     if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
         clickPos = std::nullopt;
         if(interactionMode == InteractionMode::MOVING)
