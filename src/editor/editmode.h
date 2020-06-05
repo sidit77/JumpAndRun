@@ -27,6 +27,7 @@ namespace jnr {
         const std::string& getName(){return name;}
         virtual void render() = 0;
         virtual void onGui() = 0;
+        virtual void wipe() = 0;
     };
 
     class HitboxEditMode : public EditMode {
@@ -41,6 +42,7 @@ namespace jnr {
         HitboxEditMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};
         void render() override;
         void onGui() override;
+        void wipe() override;
     };
 
     class SelectMode : public EditMode {
@@ -49,6 +51,9 @@ namespace jnr {
     private:
         void render() override;
         void onGui() override;
+
+    public:
+        void wipe() override;
     };
 
 }

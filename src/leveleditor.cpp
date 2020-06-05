@@ -48,6 +48,8 @@ void jnr::LevelEditor::restore(bool undo) {
         return;
     flatbuffers::FlatBufferBuilder& fbb = undo ? undoBuffer.undo() : undoBuffer.redo();
     GetLevel(fbb.GetBufferPointer())->UnPackTo(&level->get(true));
+    for(const std::unique_ptr<EditMode>& mode : editModes)
+        mode->wipe();
 }
 
 bool contains(jnr::AABB* a1, std::vector<jnr::AABB*> av){
@@ -104,6 +106,8 @@ bool jnr::LevelEditor::onGui() {
         if(KeyButton("Reload", level->hasChanges() && level->onDisk(),MKey::NONE)){
             level->reload();
             undoBuffer.clear();
+            for(const std::unique_ptr<EditMode>& mode : editModes)
+                mode->wipe();
         }
         ImGui::SameLine();
         if(KeyButton("Save", level->hasChanges(), MKey::CONTROL | Key::S))

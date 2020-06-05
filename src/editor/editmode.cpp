@@ -183,6 +183,12 @@ void jnr::HitboxEditMode::render() {
         for(const AABB& aabb : newset){
             getLevel(true).hitboxes.push_back(aabb);
         }
+        for(const AABB& aabb : newset){
+            for(AABB& aabb2 : getLevel().hitboxes){
+                if(aabb.low == aabb2.low && aabb.high == aabb2.high)
+                    selected.insert(&aabb2);
+            }
+        }
     }
 
 }
@@ -191,9 +197,17 @@ void jnr::HitboxEditMode::onGui() {
     ImGui::Value("Mode", (int)interactionMode);
 }
 
+void HitboxEditMode::wipe() {
+    selected.clear();
+}
+
 void jnr::SelectMode::render() {
 }
 
 void jnr::SelectMode::onGui() {
+
+}
+
+void SelectMode::wipe() {
 
 }
