@@ -3,7 +3,6 @@
 #include <imgui.h>
 #include <iostream>
 #include <algorithm>
-#include <cpp-colors/impl/constants_impl.h>
 #include "util/mixedmath.h"
 #include "util/guihelper.h"
 #include "editor/keyhelper.h"
@@ -70,22 +69,27 @@ void jnr::LevelEditor::render(float delta, float catchup, glm::ivec2 screensize)
 
     gridspacing = 1024.0f / pow(2, grid);
 
-    currentMode->render();
+    for (const AABB &box : level->get().hitboxes) {
+        primitiveRenderer->drawAABB(box.low, box.high, +EditorColors::HITBOX_FILL, 0.0f);
+        primitiveRenderer->drawAABBOutlineP(box.low, box.high, +EditorColors::HITBOX_OUTLINE, 0.1f, 2);
+    }
 
     if(grid != 0){
         for(float x = snapToGrid(cam.position.x - cam.scale * cam.aspect, gridspacing, true);
             x <= snapToGrid(cam.position.x + cam.scale * cam.aspect, gridspacing,false); x += gridspacing){
             primitiveRenderer->drawLine(
                     vec2(x, cam.position.y - cam.scale),
-                    vec2(x, cam.position.y + cam.scale), +EditorColors::GRID,1.5f);
+                    vec2(x, cam.position.y + cam.scale), +EditorColors::GRID,2);
         }
         for(float y = snapToGrid(cam.position.y - cam.scale, gridspacing, true);
             y <= snapToGrid(cam.position.y + cam.scale, gridspacing,false); y += gridspacing){
             primitiveRenderer->drawLine(
                     vec2(cam.position.x - cam.scale * cam.aspect, y),
-                    vec2(cam.position.x + cam.scale * cam.aspect, y), +EditorColors::GRID, 1.5f);
+                    vec2(cam.position.x + cam.scale * cam.aspect, y), +EditorColors::GRID, 2);
         }
     }
+
+    currentMode->render();
 
 }
 

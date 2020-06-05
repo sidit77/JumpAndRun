@@ -9,4 +9,6 @@ in vec2 texcoord;
 
 void main(){
     FragColor = texture(tex, texcoord) * color;
+    if(FragColor.a == 0)
+        discard;
 }

@@ -21,6 +21,7 @@ namespace jnr {
         float getGridSpacing();
         glm::vec2 toWorldSpace(ImVec2 v);
         void saveSnapshot();
+        float getScale();
     public:
         EditMode(jnr::LevelEditor& e, std::string n) : editor(e), name(std::move(n)){}
         const std::string& getName(){return name;}
@@ -31,6 +32,7 @@ namespace jnr {
     class HitboxDrawMode : public EditMode {
     private:
         std::optional<glm::vec2> clickPos;
+        bool drawing;
     public:
         HitboxDrawMode(LevelEditor& e) : EditMode(e, "Draw Hitbox") {};
         void render() override;

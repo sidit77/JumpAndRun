@@ -81,13 +81,13 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
         if(!editor)
             editor = std::make_unique<LevelEditor>(config, cam, level, primitiveRenderer);
 
-        editor->render(delta, catchup, screensize);
-
+        player.draw(0, 0, cam);
         if(debugOptions.showPlayerHitbox)
             player.drawDebug(0, 0, *primitiveRenderer);
 
+        editor->render(delta, catchup, screensize);
         primitiveRenderer->render(cam);
-        player.draw(0, 0, cam);
+
     }
 
 }

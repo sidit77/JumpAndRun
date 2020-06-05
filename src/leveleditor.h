@@ -13,7 +13,11 @@ namespace jnr {
     enum class EditorColors : uint32_t {
         GRID = 0x3FFAFAFA,
         HITBOX_OUTLINE = 0xFF00293F,
-        HITBOX_FILL = 0xF0006EAB
+        HITBOX_FILL = 0xF0006EAB,
+        DRAWING_CURSOR = 0xFA1A1A1A,
+        DRAWING_OUTLINE = 0xAA4A4A4A,
+        DRAWING_FILL = 0x444A4A4A,
+        SELECTION_FILL = 0x44AAAAFA
     };
 
     inline colors::color operator+(const enum EditorColors ec) {
