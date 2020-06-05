@@ -31,11 +31,14 @@ namespace jnr {
 
     class HitboxDrawMode : public EditMode {
     private:
+        enum class InteractionMode {
+            DRAWING, SELECTING, MOVING
+        };
         std::optional<glm::vec2> clickPos;
-        bool drawing;
+        InteractionMode interactionMode;
         std::set<AABB*> selected;
     public:
-        HitboxDrawMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes") {};
+        HitboxDrawMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};
         void render() override;
         void onGui() override;
     };

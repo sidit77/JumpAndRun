@@ -101,8 +101,6 @@ bool jnr::LevelEditor::onGui() {
     bool open = true;
     guihelper::beginSaved(config["ui"]["editor"],"Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
     {
-        ImGui::Value("Key", KeyHelper::isKeyDown(MKey::NONE));
-        ImGui::Text("Here are going to be tools!");
         if(KeyButton("Reload", level->hasChanges() && level->onDisk(),MKey::NONE)){
             level->reload();
             undoBuffer.clear();
@@ -126,7 +124,11 @@ bool jnr::LevelEditor::onGui() {
         for(const std::unique_ptr<EditMode>& mode : editModes){
             if(KeyButton(mode->getName().c_str(), currentMode != mode.get(), MKey::NONE))
                 currentMode = mode.get();
+            ImGui::SameLine();
         }
+        ImGui::Dummy(ImVec2(0,0));
+        ImGui::Separator();
+        currentMode->onGui();
     }
     ImGui::End();
     return open;

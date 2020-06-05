@@ -36,7 +36,7 @@ namespace jnr::KeyHelper {
     }
 
     bool isKeyPressed(MKey key){
-        return areMKeysDown((MKey)((uint32_t)key)) && ImGui::IsKeyPressed((int)((uint32_t)(key) & 0x0000ffffu, false));
+        return areMKeysDown((MKey)((uint32_t)key)) && ImGui::IsKeyPressed((int)((uint32_t)(key) & 0x0000ffffu), false);
     }
 
     bool isKeyReleased(MKey key){
