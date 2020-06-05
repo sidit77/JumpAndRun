@@ -17,7 +17,8 @@ namespace jnr {
         DRAWING_CURSOR = 0xFA1A1A1A,
         DRAWING_OUTLINE = 0xAA4A4A4A,
         DRAWING_FILL = 0x444A4A4A,
-        SELECTION_FILL = 0x44AAAAFA
+        SELECTION_FILL = 0x44AAAAFA,
+        SELECTED_OUTLINE = 0xFFEB7134
     };
 
     inline colors::color operator+(const enum EditorColors ec) {

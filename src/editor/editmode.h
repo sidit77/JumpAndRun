@@ -33,15 +33,16 @@ namespace jnr {
     private:
         std::optional<glm::vec2> clickPos;
         bool drawing;
+        std::set<AABB*> selected;
     public:
-        HitboxDrawMode(LevelEditor& e) : EditMode(e, "Draw Hitbox") {};
+        HitboxDrawMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes") {};
         void render() override;
         void onGui() override;
     };
 
     class SelectMode : public EditMode {
     public:
-        SelectMode(LevelEditor& e) : EditMode(e, "Select") {};
+        SelectMode(LevelEditor& e) : EditMode(e, "Dummy") {};
     private:
         void render() override;
         void onGui() override;

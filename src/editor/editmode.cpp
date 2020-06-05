@@ -41,6 +41,7 @@ void jnr::HitboxDrawMode::render() {
     ImGuiIO& io = ImGui::GetIO();
 
     vec2 mousepos = toWorldSpace(ImGui::GetMousePos());
+
     if(!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         clickPos = toWorldSpace(ImGui::GetMousePos());
     }
@@ -55,6 +56,7 @@ void jnr::HitboxDrawMode::render() {
             getPrimitveRenderer().drawQuad(pos, vec2(12, 3) * getScale(), +EditorColors::DRAWING_CURSOR, 3.0f, vec2(0.5,0.5));
             getPrimitveRenderer().drawQuad(pos, vec2( 3,12) * getScale(), +EditorColors::DRAWING_CURSOR, 3.0f, vec2(0.5,0.5));
         }else {
+            selected.clear();
             vec2 clickedpos = *clickPos;
             vec2 releasepos = mousepos;
 
@@ -86,7 +88,12 @@ void jnr::HitboxDrawMode::render() {
             vec2 low = glm::min(*clickPos, mousepos);
             vec2 high = glm::max(*clickPos, mousepos);
             if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
-
+                AABB selection(low, high);
+                selected.clear();
+                for(AABB& aabb : getLevel().hitboxes){
+                    if(physics::BoxVsBox(selection, aabb))
+                        selected.insert(&aabb);
+                }
             }
             getPrimitveRenderer().drawAABB(low, high, +EditorColors::SELECTION_FILL, 1.5f);
         }
@@ -95,15 +102,17 @@ void jnr::HitboxDrawMode::render() {
     if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
         clickPos = std::nullopt;
 
-    if(!io.WantCaptureMouse && ImGui::IsMouseReleased(ImGuiMouseButton_Right)){
-        if(physics::PointVsBoxes(mousepos, getLevel().hitboxes)){
-            saveSnapshot();
-            std::vector<AABB>& hbs = getLevel(true).hitboxes;
-            hbs.erase(std::remove_if(hbs.begin(), hbs.end(), [&mousepos](const AABB& aabb){
-                return physics::PointVsBox(mousepos, aabb);
-            }), hbs.end());
-        }
+    for(AABB* aabb : selected){
+        getPrimitveRenderer().drawAABBOutlineP(aabb->low, aabb->high, +EditorColors::SELECTED_OUTLINE, 2.5f, 3 * max(1.0f, getScale()));
+    }
 
+    if(!selected.empty() && KeyHelper::isKeyPressed(Key::DELETE)){
+        saveSnapshot();
+        std::vector<AABB>& hbs = getLevel(true).hitboxes;
+        hbs.erase(std::remove_if(hbs.begin(), hbs.end(), [&selected = selected](AABB& aabb){
+            return selected.find(&aabb) != selected.end();
+        }), hbs.end());
+        selected.clear();
     }
 
 }
