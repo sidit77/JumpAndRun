@@ -80,6 +80,10 @@ set_property(TARGET schema PROPERTY GENERATED_INCLUDES_DIR ${generated_includes_
 
 add_executable(JumpAndRun ${all_SRCS} ${RESOURCES})
 
+if(MSVC)
+    set_target_properties(JumpAndRun PROPERTIES LINK_FLAGS "/ENTRY:mainCRTStartup /SUBSYSTEM:WINDOWS")
+endif()
+
 add_dependencies(JumpAndRun schema)
 
 target_link_libraries(JumpAndRun glfw glad imgui gason creature-runtime flatbuffers)
