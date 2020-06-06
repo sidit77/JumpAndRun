@@ -57,6 +57,20 @@ std::vector<AABB>& jnr::HitboxEditMode::getHitboxes(bool mut)
     return getLevel(mut).hitboxes;
 }
 
+uint8 getResizeMask(const AABB& aabb, float w, vec2 mp){
+    float x = aabb.high.x - aabb.low.x, y = aabb.high.y - aabb.low.y;
+    vec2 p1 = aabb.low - vec2(w / 2);
+
+    uint8 result = 0;
+
+    result |= physics::PointVsBox(mp, AABB(p1 + vec2(0, 0), p1 + vec2(x + w,     w))) ? (1U << 1U) : 0;
+    result |= physics::PointVsBox(mp, AABB(p1 + vec2(0, 0), p1 + vec2(    w, y + w))) ? (1U << 2U) : 0;
+    result |= physics::PointVsBox(mp, AABB(p1 + vec2(x, 0), p1 + vec2(x + w, y + w))) ? (1U << 3U) : 0;
+    result |= physics::PointVsBox(mp, AABB(p1 + vec2(0, y), p1 + vec2(x + w, y + w))) ? (1U << 4U) : 0;
+
+    return result;
+}
+
 void jnr::HitboxEditMode::render() {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -67,6 +81,17 @@ void jnr::HitboxEditMode::render() {
 
     if(!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         clickPos = toWorldSpace(ImGui::GetMousePos());
+        if(interactionMode == InteractionMode::SELECTING) {
+            for (size_t index : selected) {
+                uint8 mask = getResizeMask(getHitboxes()[index], 5 * max(1.0f, getScale()), *clickPos);
+                if (mask != 0) {
+                    interactionMode = InteractionMode::RESIZING;
+                    selected.clear();
+                    selected.insert(index);
+                    break;
+                }
+            }
+        }
         if(interactionMode == InteractionMode::SELECTING) {
             for (size_t index : selected) {
                 if (physics::PointVsBox(*clickPos, getHitboxes()[index]))
@@ -169,6 +194,45 @@ void jnr::HitboxEditMode::render() {
                 }
             }
             break;
+        case InteractionMode::RESIZING:
+            if(clickPos){
+                AABB aabb = getHitboxes()[*selected.begin()];
+                vec2 l = aabb.low, h = aabb.high;
+                uint8 mask = getResizeMask(aabb, 5 * max(1.0f, getScale()), *clickPos);
+                vec2 delta = mousepos - *clickPos;
+
+                if(isGridEnabled()) {
+                    if ((mask & (1U << 1U)) != 0)
+                        aabb.low.y = snapToClosest(aabb.low.y + delta.y, getGridSpacing());
+                    if ((mask & (1U << 2U)) != 0)
+                        aabb.low.x = snapToClosest(aabb.low.x + delta.x, getGridSpacing());
+                    if ((mask & (1U << 3U)) != 0)
+                        aabb.high.x = snapToClosest(aabb.high.x + delta.x, getGridSpacing());
+                    if ((mask & (1U << 4U)) != 0)
+                        aabb.high.y = snapToClosest(aabb.high.y + delta.y, getGridSpacing());
+                    aabb.low = min(aabb.low, h - vec2(getGridSpacing()));
+                    aabb.high = max(aabb.high, l + vec2(getGridSpacing()));
+                } else {
+                    if ((mask & (1U << 1U)) != 0)
+                        aabb.low.y += delta.y;
+                    if ((mask & (1U << 2U)) != 0)
+                        aabb.low.x += delta.x;
+                    if ((mask & (1U << 3U)) != 0)
+                        aabb.high.x += delta.x;
+                    if ((mask & (1U << 4U)) != 0)
+                        aabb.high.y += delta.y;
+                    aabb.low = min(aabb.low, h - vec2(1));
+                    aabb.high = max(aabb.high, l + vec2(1));
+                }
+
+                getPrimitveRenderer().drawAABBOutlineP(aabb.low, aabb.high, +EditorColors::SELECTED_OUTLINE, 2.5f, 3 * max(1.0f, getScale()));
+
+                if(ImGui::IsMouseReleased(ImGuiMouseButton_Left) && (length(aabb.low - l) != 0 || length(aabb.high - h) != 0)){
+                    saveSnapshot();
+                    getHitboxes(true)[*selected.begin()] = aabb;
+                }
+            }
+            break;
     }
 
     if(KeyHelper::isKeyReleased(Key::LEFT_SHIFT)){
@@ -177,15 +241,36 @@ void jnr::HitboxEditMode::render() {
     }
     if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
         clickPos = std::nullopt;
-        if(interactionMode == InteractionMode::MOVING)
+        if(interactionMode == InteractionMode::MOVING || interactionMode == InteractionMode::RESIZING)
             interactionMode = InteractionMode::SELECTING;
+
     }
 
 
     for (size_t index : selected) {
         const AABB& aabb = getHitboxes()[index];
-        getPrimitveRenderer().drawAABBOutlineP(aabb.low, aabb.high, +EditorColors::SELECTED_OUTLINE, 2.5f, 3 * max(1.0f, getScale()));
+        getPrimitveRenderer().drawAABBOutlineP(aabb.low, aabb.high,
+            (interactionMode == InteractionMode::SELECTING) ? +EditorColors::SELECTED_OUTLINE : +EditorColors::GROUP_MOVE_OUTLINE,
+            2.5f,3 * max(1.0f, getScale()));
+
+        if(interactionMode == InteractionMode::SELECTING) {
+            float w = 5 * max(1.0f, getScale());
+            uint8 mask = getResizeMask(getHitboxes()[index], w, mousepos);
+            if (mask != 0) {
+                float x = aabb.high.x - aabb.low.x, y = aabb.high.y - aabb.low.y;
+                vec2 p1 = aabb.low - vec2(w / 2);
+                if ((mask & (1U << 1U)) != 0)
+                    getPrimitveRenderer().drawAABB(p1 + vec2(0, 0), p1 + vec2(x + w, w), +EditorColors::RESIZE_HOVER_OVERLAY,2.61f);
+                if ((mask & (1U << 2U)) != 0)
+                    getPrimitveRenderer().drawAABB(p1 + vec2(0, 0), p1 + vec2(w, y + w), +EditorColors::RESIZE_HOVER_OVERLAY,2.62f);
+                if ((mask & (1U << 3U)) != 0)
+                    getPrimitveRenderer().drawAABB(p1 + vec2(x, 0), p1 + vec2(x + w, y + w),+EditorColors::RESIZE_HOVER_OVERLAY, 2.63f);
+                if ((mask & (1U << 4U)) != 0)
+                    getPrimitveRenderer().drawAABB(p1 + vec2(0, y), p1 + vec2(x + w, y + w),+EditorColors::RESIZE_HOVER_OVERLAY, 2.64f);
+            }
+        }
     }
+
 
     if(!selected.empty() && KeyHelper::isKeyPressed(Key::DELETE)){
         saveSnapshot();

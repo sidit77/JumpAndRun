@@ -34,7 +34,7 @@ namespace jnr {
     class HitboxEditMode : public EditMode {
     private:
         enum class InteractionMode {
-            DRAWING, SELECTING, MOVING
+            DRAWING, SELECTING, MOVING, RESIZING
         };
         std::optional<glm::vec2> clickPos;
         InteractionMode interactionMode;

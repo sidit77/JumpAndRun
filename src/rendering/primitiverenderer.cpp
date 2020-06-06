@@ -57,7 +57,6 @@ void jnr::PrimitiveRenderer::drawAABBOutline(glm::vec2 p1, glm::vec2 p2, colors:
 }
 
 void jnr::PrimitiveRenderer::drawAABBOutlineP(glm::vec2 p1, glm::vec2 p2, colors::color c, float z, float w) {
-    float hw = w / 2;
     drawQuad(glm::mix(p1, p2, glm::vec2(0.5f,0.0f)), glm::vec2(p2.x - p1.x + w, w), c, z, glm::vec2(0.5f));
     drawQuad(glm::mix(p1, p2, glm::vec2(0.5f,1.0f)), glm::vec2(p2.x - p1.x + w, w), c, z, glm::vec2(0.5f));
     drawQuad(glm::mix(p1, p2, glm::vec2(1.0f,0.5f)), glm::vec2(w, p2.y - p1.y + w), c, z, glm::vec2(0.5f));
