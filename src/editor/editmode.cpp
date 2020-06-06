@@ -37,17 +37,24 @@ float EditMode::getScale() {
     return getCamera().scale / camera::default_scale;
 }
 
-std::optional<AABB> getGroupAABB(const std::set<AABB*>& group){
+std::optional<AABB> jnr::HitboxEditMode::getGroupAABB(){
     std::optional<AABB> result = std::nullopt;
-    for(AABB* aabb : group){
-        if(!result) {
-            result = *aabb;
-        }else{
-            result->low = min(result->low, aabb->low);
-            result->high = max(result->high, aabb->high);
+    for (size_t index : selected) {
+        const AABB& aabb = getHitboxes()[index];
+        if (!result) {
+            result = aabb;
+        }
+        else {
+            result->low = min(result->low, aabb.low);
+            result->high = max(result->high, aabb.high);
         }
     }
     return result;
+}
+
+std::vector<AABB>& jnr::HitboxEditMode::getHitboxes(bool mut)
+{
+    return getLevel(mut).hitboxes;
 }
 
 void jnr::HitboxEditMode::render() {
@@ -55,11 +62,14 @@ void jnr::HitboxEditMode::render() {
 
     vec2 mousepos = toWorldSpace(ImGui::GetMousePos());
 
+    while (!selected.empty() && *selected.begin() >= getHitboxes().size())
+        selected.erase(selected.begin());
+
     if(!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         clickPos = toWorldSpace(ImGui::GetMousePos());
         if(interactionMode == InteractionMode::SELECTING) {
-            for (AABB *aabb : selected) {
-                if (physics::PointVsBox(*clickPos, *aabb))
+            for (size_t index : selected) {
+                if (physics::PointVsBox(*clickPos, getHitboxes()[index]))
                     interactionMode = InteractionMode::MOVING;
             }
         }
@@ -108,11 +118,11 @@ void jnr::HitboxEditMode::render() {
             break;
         case InteractionMode::SELECTING:
             if(clickPos && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-                for (AABB& aabb : getLevel().hitboxes) {
-                    if (physics::PointVsBox(*clickPos, aabb)){
+                for (size_t i = 0; i < getHitboxes().size(); i++) {
+                    if (physics::PointVsBox(*clickPos, getHitboxes()[i])){
                         if(!KeyHelper::isKeyDown(Key::LEFT_CONTROL))
                             selected.clear();
-                        selected.insert(&aabb);
+                        selected.insert(i);
                         clickPos = std::nullopt;
                         break;
                     }
@@ -125,9 +135,9 @@ void jnr::HitboxEditMode::render() {
                     AABB selection(low, high);
                     if(!KeyHelper::isKeyDown(Key::LEFT_CONTROL))
                         selected.clear();
-                    for(AABB& aabb : getLevel().hitboxes){
-                        if(physics::BoxVsBox(selection, aabb))
-                            selected.insert(&aabb);
+                    for(size_t i = 0; i < getHitboxes().size(); i++){
+                        if(physics::BoxVsBox(selection, getHitboxes()[i]))
+                            selected.insert(i);
                     }
                 }
                 getPrimitveRenderer().drawAABB(low, high, +EditorColors::SELECTION_FILL, 1.5f);
@@ -137,7 +147,7 @@ void jnr::HitboxEditMode::render() {
             if(clickPos){
                 vec2 delta = mousepos - *clickPos;
                 if(isGridEnabled()) {
-                    auto group = getGroupAABB(selected);
+                    auto group = getGroupAABB();
                     if (group) {
                         vec2 corpos = vec2(delta.x < 0  ? group->low.x : group->high.x, delta.y < 0  ? group->low.y : group->high.y);
                         delta = snapToClosest(corpos + delta, getGridSpacing()) - corpos;
@@ -145,14 +155,16 @@ void jnr::HitboxEditMode::render() {
                                 +EditorColors::GROUP_MOVE_OUTLINE, 2.4f,3 * max(1.0f, getScale()));
                     }
                 }
-                for(AABB* aabb : selected){
-                    getPrimitveRenderer().drawAABBOutlineP(aabb->low + delta, aabb->high + delta, +EditorColors::SELECTED_OUTLINE, 2.5f, 3 * max(1.0f, getScale()));
+                for(size_t index : selected){
+                    const AABB& aabb = getHitboxes()[index];
+                    getPrimitveRenderer().drawAABBOutlineP(aabb.low + delta, aabb.high + delta, +EditorColors::SELECTED_OUTLINE, 2.5f, 3 * max(1.0f, getScale()));
                 }
                 if(ImGui::IsMouseReleased(ImGuiMouseButton_Left) && length(delta) > 0){
                     saveSnapshot();
-                    for(AABB* aabb : selected){
-                        aabb->high += delta;
-                        aabb->low += delta;
+                    for (size_t index : selected) {
+                        AABB& aabb = getHitboxes(true)[index];
+                        aabb.high += delta;
+                        aabb.low += delta;
                     }
                 }
             }
@@ -170,36 +182,33 @@ void jnr::HitboxEditMode::render() {
     }
 
 
-    for(AABB* aabb : selected){
-        getPrimitveRenderer().drawAABBOutlineP(aabb->low, aabb->high, +EditorColors::SELECTED_OUTLINE, 2.5f, 3 * max(1.0f, getScale()));
+    for (size_t index : selected) {
+        const AABB& aabb = getHitboxes()[index];
+        getPrimitveRenderer().drawAABBOutlineP(aabb.low, aabb.high, +EditorColors::SELECTED_OUTLINE, 2.5f, 3 * max(1.0f, getScale()));
     }
 
     if(!selected.empty() && KeyHelper::isKeyPressed(Key::DELETE)){
         saveSnapshot();
         std::vector<AABB>& hbs = getLevel(true).hitboxes;
-        hbs.erase(std::remove_if(hbs.begin(), hbs.end(), [&selected = selected](AABB& aabb){
-            return selected.find(&aabb) != selected.end();
-        }), hbs.end());
+        for (size_t index : selected) {
+            hbs.erase(hbs.begin() + index);
+        }
         selected.clear();
     }
 
     if(!selected.empty() && KeyHelper::isKeyPressed(MKey::CONTROL | Key::D)){
         saveSnapshot();
-        std::vector<AABB> newset;
-        for(AABB* aabb : selected){
-            newset.emplace_back(
-                    aabb->low + vec2(50, 50) * getScale(),
-                    aabb->high + vec2(50, 50) * getScale());
+        size_t start = getHitboxes().size();
+        size_t end = selected.size();
+        for(size_t index : selected){
+            const AABB& aabb = getHitboxes()[index];
+            getHitboxes(true).emplace_back(
+                    aabb.low + vec2(50, 50) * getScale(),
+                    aabb.high + vec2(50, 50) * getScale());
         }
         selected.clear();
-        for(const AABB& aabb : newset){
-            getLevel(true).hitboxes.push_back(aabb);
-        }
-        for(const AABB& aabb : newset){
-            for(AABB& aabb2 : getLevel().hitboxes){
-                if(aabb.low == aabb2.low && aabb.high == aabb2.high)
-                    selected.insert(&aabb2);
-            }
+        for (size_t index = start; index < start + end; index++) {
+            selected.insert(index);
         }
     }
 
@@ -210,7 +219,7 @@ void jnr::HitboxEditMode::onGui() {
 }
 
 void HitboxEditMode::wipe() {
-    selected.clear();
+    //selected.clear();
 }
 
 void jnr::SelectMode::render() {

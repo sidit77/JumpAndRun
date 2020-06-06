@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 #include "../util/noncopyable.h"
 #include "../leveleditor.h"
 #include "editormath.h"
@@ -37,7 +38,10 @@ namespace jnr {
         };
         std::optional<glm::vec2> clickPos;
         InteractionMode interactionMode;
-        std::set<AABB*> selected;
+        std::set<size_t, std::greater<size_t>> selected;
+
+        std::vector<AABB>& getHitboxes(bool mut = true);
+        std::optional<AABB> getGroupAABB();
     public:
         HitboxEditMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};
         void render() override;

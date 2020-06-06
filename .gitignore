@@ -3,6 +3,8 @@ cmake-build-release
 cmake-build-minggw-debug
 cmake-build-minggwdebug/
 .idea
+.vs
 build/
+out/
 compile.sh
 
