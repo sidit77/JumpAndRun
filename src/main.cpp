@@ -83,7 +83,7 @@ int main() {
         double lastupdate = glfwGetTime();
         double lastframe = glfwGetTime();
 
-        while (!glfwWindowShouldClose(window)){
+        while (!game.quited){
             if(game.getConfig().dirty){
                 game.getConfig().dirty = false;
                 configureWindow(window, config);
@@ -100,6 +100,10 @@ int main() {
 
             glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT); //
 
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
             double delta = glfwGetTime() - lastframe;
             game.render(
                     game.getDebugOptions().speed * delta,
@@ -107,9 +111,7 @@ int main() {
                     screensize);
             lastframe += delta;
 
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
+
             game.ongui();
             //ImGui::Checkbox("Fullsceen")
             ImGui::Render();

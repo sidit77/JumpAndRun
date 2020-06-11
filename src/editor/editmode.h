@@ -40,7 +40,7 @@ namespace jnr {
         InteractionMode interactionMode;
         std::set<size_t, std::greater<size_t>> selected;
 
-        std::vector<AABB>& getHitboxes(bool mut = true);
+        std::vector<AABB>& getHitboxes(bool mut = false);
         std::optional<AABB> getGroupAABB();
     public:
         HitboxEditMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};

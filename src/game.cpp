@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "game.h"
+#include "editor/keyhelper.h"
 #include <imgui.h>
 #include <iostream>
 #include <memory>
@@ -24,7 +25,7 @@ Game::Game(Config& c, GLFWwindow* w) :
 }
 
 void Game::update(float timestep) {
-    if(editor_open)
+    if(editor_open || glfwWindowShouldClose(window))
         return;
 
     Input input{};
@@ -111,8 +112,31 @@ void Game::ongui() {
         ImGui::SameLine();
         if (ImGui::Button("Quit"))
             glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+        if(glfwWindowShouldClose(window)){
+            if(level->hasChanges())
+                ImGui::OpenPopup("AskForSave");
+            else
+                quited = true;
+        }
+
+        if (ImGui::BeginPopupModal("AskForSave", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove)){
+            ImGui::Text("Save changes?");
+            if (ImGui::Button("Yes", ImVec2(60, 30))){
+                level->save();
+                quited = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No",ImVec2(60, 30))){
+                quited = true;
+            }
+            //ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+        }
     }
     ImGui::End();
+
+
 
     if(settings) {
         guihelper::beginSaved(config["ui"]["settings"], "Settings", &settings, ImGuiWindowFlags_AlwaysAutoResize);
@@ -150,6 +174,8 @@ void Game::ongui() {
     }
     if (demo)
         ImGui::ShowDemoWindow(&demo);
+    if(KeyHelper::isKeyPressed(Key::F1))
+        editor_open = !editor_open;
     if(editor_open && editor){
         editor_open = editor->onGui();
     }

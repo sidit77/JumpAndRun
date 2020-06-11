@@ -31,6 +31,7 @@ namespace jnr {
         bool editor_open;
         Input lastInput;
     public:
+        bool quited = false;
         Game(Config& c, GLFWwindow* w);
         ~Game();
         void update(float timestep);

@@ -79,7 +79,7 @@ void jnr::HitboxEditMode::render() {
     while (!selected.empty() && *selected.begin() >= getHitboxes().size())
         selected.erase(selected.begin());
 
-    if(!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+    if(!io.WantCaptureMouse && !ImGui::IsPopupOpen("AskForSave") && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         clickPos = toWorldSpace(ImGui::GetMousePos());
         if(interactionMode == InteractionMode::SELECTING) {
             for (size_t index : selected) {
@@ -253,7 +253,7 @@ void jnr::HitboxEditMode::render() {
             (interactionMode == InteractionMode::SELECTING) ? +EditorColors::SELECTED_OUTLINE : +EditorColors::GROUP_MOVE_OUTLINE,
             2.5f,3 * max(1.0f, getScale()));
 
-        if(interactionMode == InteractionMode::SELECTING) {
+        if(interactionMode == InteractionMode::SELECTING && !io.WantCaptureMouse && !ImGui::IsPopupOpen("AskForSave")) {
             float w = 5 * max(1.0f, getScale());
             uint8 mask = getResizeMask(getHitboxes()[index], w, mousepos);
             if (mask != 0) {
