@@ -12,11 +12,11 @@ void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
 }
 
-void configureWindow(GLFWwindow* window);
+void configureWindow();
 
 int main() {
 
-    jnr::services::config = std::make_shared<jnr::Config>("config.toml");
+    jnr::services::config = std::make_unique<jnr::Config>("config.toml");
 
     //ttvfs::Root vfs;
     //vfs.AddLoader(new ttvfs::DiskLoader);
@@ -41,8 +41,6 @@ int main() {
 //
     //vf->close();
 
-    GLFWwindow* window;
-
     if (!glfwInit())
         return -1;
 
@@ -56,12 +54,12 @@ int main() {
     glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
 
-    window = glfwCreateWindow(1280, 720, "Jump And Run", NULL, NULL);
-    if (!window) {
+    jnr::services::window = deleted_unique_ptr<GLFWwindow>(glfwCreateWindow(1280, 720, "Jump And Run", NULL, NULL), glfwDestroyWindow);
+    if (!jnr::services::window) {
         glfwTerminate();
         return -1;
     }
-    glfwSetWindowSizeCallback(window, [](GLFWwindow* window,int w,int h){
+    glfwSetWindowSizeCallback(jnr::services::window.get(), [](GLFWwindow* window,int w,int h){
         if(glfwGetWindowMonitor(window) == NULL){
             auto* config = jnr::services::config.get();
             (*config)["display"]["w"] = w;
@@ -69,7 +67,7 @@ int main() {
         }
     });
 
-    glfwSetWindowPosCallback(window, [](GLFWwindow* window,int x,int y){
+    glfwSetWindowPosCallback(jnr::services::window.get(), [](GLFWwindow* window,int x,int y){
         if(glfwGetWindowMonitor(window) == NULL){
             auto* config = jnr::services::config.get();
             (*config)["display"]["x"] = x;
@@ -77,11 +75,8 @@ int main() {
         }
     });
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(jnr::services::window.get());
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-
-    configureWindow(window);
-
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -98,12 +93,12 @@ int main() {
     jnr::guihelper::setupStyle();
 
 
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(jnr::services::window.get(), true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
 
     {
-        jnr::Game game(window);
+        jnr::Game game;
 
         double lastupdate = glfwGetTime();
         double lastframe = glfwGetTime();
@@ -111,7 +106,7 @@ int main() {
         while (!game.quited){
             if(jnr::services::config->dirty){
                 jnr::services::config->dirty = false;
-                configureWindow(window);
+                configureWindow();
             }
             while (glfwGetTime() - lastupdate > 1.0 / game.getDebugOptions().timestep) {
                 lastupdate += 1.0 / game.getDebugOptions().timestep;
@@ -120,7 +115,7 @@ int main() {
             }
 
             glm::ivec2 screensize;
-            glfwGetFramebufferSize(window, &screensize.x, &screensize.y);
+            glfwGetFramebufferSize(jnr::services::window.get(), &screensize.x, &screensize.y);
             glViewport(0, 0, screensize.x, screensize.y);
 
             glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT); //
@@ -143,24 +138,25 @@ int main() {
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             glfwSwapInterval((*jnr::services::config)["display"]["vsync"].as<int>());
-            glfwSwapBuffers(window);
+            glfwSwapBuffers(jnr::services::window.get());
             glfwPollEvents();
         }
     }
-    //std::cout << config << std::endl;
+
+    jnr::services::window.reset();
 
     glfwTerminate();
     return 0;
 }
 
-void configureWindow(GLFWwindow* window){
+void configureWindow(){
     auto& conf = *jnr::services::config;
     if(conf["display"]["fullscreen"].as<bool>()) {
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(jnr::services::window.get(), monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
     } else {
-        glfwSetWindowMonitor(window, NULL,
+        glfwSetWindowMonitor(jnr::services::window.get(), NULL,
                              conf["display"]["x"].as<int>(),
                              conf["display"]["y"].as<int>(),
                              conf["display"]["w"].as<int>(),

@@ -11,9 +11,8 @@
 using namespace jnr;
 using namespace glm;
 
-Game::Game(GLFWwindow* w) :
+Game::Game() :
         debugOptions(),
-        window(w),
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         primitiveRenderer(std::make_shared<PrimitiveRenderer>()),
@@ -25,20 +24,20 @@ Game::Game(GLFWwindow* w) :
 }
 
 void Game::update(float timestep) {
-    if(editor_open || glfwWindowShouldClose(window))
+    if(editor_open || glfwWindowShouldClose(jnr::services::window.get()))
         return;
 
     Input input{};
-    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if(glfwGetKey(jnr::services::window.get(), GLFW_KEY_A) == GLFW_PRESS)
         input.move.x -= 1.0f;
-    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if(glfwGetKey(jnr::services::window.get(), GLFW_KEY_D) == GLFW_PRESS)
         input.move.x += 1.0f;
-    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if(glfwGetKey(jnr::services::window.get(), GLFW_KEY_W) == GLFW_PRESS)
         input.move.y += 1.0f;
-    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if(glfwGetKey(jnr::services::window.get(), GLFW_KEY_S) == GLFW_PRESS)
         input.move.y -= 1.0f;
 
-    input.jump = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
+    input.jump = glfwGetKey(jnr::services::window.get(), GLFW_KEY_SPACE) == GLFW_PRESS;
 
     if(glfwJoystickIsGamepad(GLFW_JOYSTICK_1)){
         GLFWgamepadstate state;
@@ -112,9 +111,9 @@ void Game::ongui() {
             settings = true;
         ImGui::SameLine();
         if (ImGui::Button("Quit"))
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
+            glfwSetWindowShouldClose(jnr::services::window.get(), GLFW_TRUE);
 
-        if(glfwWindowShouldClose(window)){
+        if(glfwWindowShouldClose(jnr::services::window.get())){
             if(level->hasChanges())
                 ImGui::OpenPopup("AskForSave");
             else
