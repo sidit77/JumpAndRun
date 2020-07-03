@@ -27,9 +27,8 @@ namespace jnr {
 
     class EditMode;
 
-    class LevelEditorMode : public GameMode {
+    class LevelEditorMode : public PlayMode {
     private:
-        jnr::PlayMode playMode;
         bool editing;
         jnr::UndoBuffer<flatbuffers::FlatBufferBuilder, 10> undoBuffer;
         int grid = 0;

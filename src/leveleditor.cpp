@@ -5,6 +5,8 @@
 #include <algorithm>
 #include "util/mixedmath.h"
 #include "editor/keyhelper.h"
+#include <GLFW/glfw3.h>
+#include "service.h"
 
 using namespace glm;
 
@@ -33,7 +35,7 @@ glm::vec2 jnr::LevelEditorMode::toWorldSpace(ImVec2 v){
     return clicpos;
 }
 
-jnr::LevelEditorMode::LevelEditorMode() : playMode(this){
+jnr::LevelEditorMode::LevelEditorMode(){
     auto& config = *jnr::services::config;
     grid = getOrDefault(config["editor"]["grid"], 0);
     editModes.emplace_back(new SelectMode(*this));
@@ -68,12 +70,12 @@ void jnr::LevelEditorMode::restore(bool undo) {
 
 void jnr::LevelEditorMode::update(float timestep) {
     if(!editing)
-        playMode.update(timestep);
+        PlayMode::update(timestep);
 }
 
 void jnr::LevelEditorMode::render(float delta, float catchup) {
     if(!editing){
-        playMode.render(delta, catchup);
+        PlayMode::render(delta, catchup);
     } else {
         ImGuiIO& io = ImGui::GetIO();
         cam->aspect = (float) io.DisplaySize.x / io.DisplaySize.y;

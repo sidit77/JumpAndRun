@@ -6,6 +6,7 @@
 #include <examples/imgui_impl_glfw.h>
 #include <ttvfs.h>
 #include "leveleditor.h"
+#include "service.h"
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
@@ -52,39 +53,31 @@ int main() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
+    {
+        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+        bool f = jnr::getOrDefault((*jnr::services::config)["display"]["fullscreen"], false);
+        int w = jnr::getOrDefault((*jnr::services::config)["display"]["width"], 1280);
+        int h = jnr::getOrDefault((*jnr::services::config)["display"]["height"], 720);
 
-    jnr::services::window = deleted_unique_ptr<GLFWwindow>(glfwCreateWindow(1280, 720, "Jump And Run", NULL, NULL), glfwDestroyWindow);
-    if (!jnr::services::window) {
-        glfwTerminate();
-        return -1;
+        jnr::services::window = deleted_unique_ptr<GLFWwindow>(glfwCreateWindow(f ? mode->width : w, f ? mode->height : h, "Jump And Run", f ? monitor : NULL, NULL),
+                                                               glfwDestroyWindow);
+        if (!jnr::services::window) {
+            glfwTerminate();
+            return -1;
+        }
     }
     glfwSetWindowSizeCallback(jnr::services::window.get(), [](GLFWwindow* window,int w,int h){
         if(glfwGetWindowMonitor(window) == NULL){
             auto* config = jnr::services::config.get();
-            (*config)["display"]["w"] = w;
-            (*config)["display"]["h"] = h;
-        }
-    });
-
-    glfwSetWindowPosCallback(jnr::services::window.get(), [](GLFWwindow* window,int x,int y){
-        if(glfwGetWindowMonitor(window) == NULL){
-            auto* config = jnr::services::config.get();
-            (*config)["display"]["x"] = x;
-            (*config)["display"]["y"] = y;
+            (*config)["display"]["width"] = w;
+            (*config)["display"]["height"] = h;
         }
     });
 
     glfwMakeContextCurrent(jnr::services::window.get());
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-    configureWindow();
-
-    glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDepthFunc(GL_LESS);
+    glfwSwapInterval(jnr::getOrDefault((*jnr::services::config)["display"]["vsync"], 1));
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -92,54 +85,12 @@ int main() {
     io.IniFilename = NULL;
     jnr::guihelper::setupStyle();
 
-
     ImGui_ImplGlfw_InitForOpenGL(jnr::services::window.get(), true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
-
     {
-        std::unique_ptr<jnr::GameMode> game = std::unique_ptr<jnr::GameMode>(new jnr::LevelEditorMode());
-
-        double lastupdate = glfwGetTime();
-        double lastframe = glfwGetTime();
-
-        while (!(glfwWindowShouldClose(jnr::services::window.get()) && game->canClose())){
-            if(jnr::services::config->dirty){
-                jnr::services::config->dirty = false;
-                configureWindow();
-            }
-            while (glfwGetTime() - lastupdate > 1.0 / game->getDebugOptions().timestep) {
-                lastupdate += 1.0 / game->getDebugOptions().timestep;
-                game->update(game->getDebugOptions().speed * (1.0 / game->getDebugOptions().timestep));
-
-            }
-
-            glm::ivec2 screensize;
-            glfwGetFramebufferSize(jnr::services::window.get(), &screensize.x, &screensize.y);
-            glViewport(0, 0, screensize.x, screensize.y);
-
-            glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT); //
-
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-
-            double delta = glfwGetTime() - lastframe;
-            game->render(
-                    game->getDebugOptions().speed * delta,
-                    game->getDebugOptions().speed * (glfwGetTime() - lastupdate) * (game->getDebugOptions().movement_smoothing ? 1 : 0));
-            lastframe += delta;
-
-
-            game->onGui();
-            //ImGui::Checkbox("Fullsceen")
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-            glfwSwapInterval((*jnr::services::config)["display"]["vsync"].as<int>());
-            glfwSwapBuffers(jnr::services::window.get());
-            glfwPollEvents();
-        }
+        std::unique_ptr<jnr::PlayMode> game = std::unique_ptr<jnr::PlayMode>(new jnr::LevelEditorMode());
+        game->run();
     }
 
     jnr::services::window.reset();

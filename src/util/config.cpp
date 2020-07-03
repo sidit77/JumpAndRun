@@ -3,29 +3,14 @@
 #include <fstream>
 #include <utility>
 
-toml::Value getDefaultConfig(){
-    toml::Value result;
-    result["display"]["fullscreen"] = false;
-    result["display"]["vsync"] = 1;
-    result["display"]["x"] = 100;
-    result["display"]["y"] = 100;
-    result["display"]["w"] = 1280;
-    result["display"]["h"] = 720;
-
-    return result;
-}
-
-jnr::Config::Config(std::string p) : path(std::move(p)){
-    config = getDefaultConfig();
-
+jnr::Config::Config(std::string p) : path(std::move(p)), config(){
     std::ifstream ifs("config.toml");
     toml::ParseResult pr = toml::parse(ifs);
     ifs.close();
-    if (!pr.valid()) {
+    if (pr.valid()) {
+        config = pr.value;
+    } else {
         std::cout << pr.errorReason << std::endl;
-    } else if(!config.merge(pr.value)){
-        std::cout << "cannot apply custom config!" << std::endl;
-        config = getDefaultConfig();
     }
 }
 
@@ -51,7 +36,7 @@ toml::Value& jnr::Config::operator[](const std::string &key) {
 }
 
 void jnr::Config::reset() {
-    config = getDefaultConfig();
+    config = toml::Value();
     dirty = true;
 }
 
