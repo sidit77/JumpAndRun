@@ -37,6 +37,7 @@ jnr::Config::~Config() {
         myfile.close();
     }
     else std::cerr << "cannot save config!" << std::endl;
+    std::cout << "Saving..." << std::endl;
 }
 
 toml::Value& jnr::Config::operator[](const std::string &key) {

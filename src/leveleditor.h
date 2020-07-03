@@ -31,7 +31,6 @@ namespace jnr {
 
     class LevelEditor : private NonCopyable {
     private:
-        jnr::Config& config;
         jnr::Camera& cam;
         jnr::UndoBuffer<flatbuffers::FlatBufferBuilder, 10> undoBuffer;
         std::shared_ptr<jnr::LevelWrapper> level;
@@ -47,7 +46,7 @@ namespace jnr {
         void restore(bool undo);
     public:
         friend class EditMode;
-        LevelEditor(jnr::Config& config, jnr::Camera& cam, std::shared_ptr<jnr::LevelWrapper> level, std::shared_ptr<jnr::PrimitiveRenderer> pr);
+        LevelEditor(jnr::Camera& cam, std::shared_ptr<jnr::LevelWrapper> level, std::shared_ptr<jnr::PrimitiveRenderer> pr);
         ~LevelEditor();
 
         void render(float delta, float catchup, glm::ivec2 screensize);

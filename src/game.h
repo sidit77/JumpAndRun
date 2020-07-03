@@ -21,7 +21,6 @@ namespace jnr {
     class Game : private NonCopyable{
     private:
         GLFWwindow* window;
-        Config& config;
         DebugOptions debugOptions;
         Camera cam;
         Player player;
@@ -32,12 +31,11 @@ namespace jnr {
         Input lastInput;
     public:
         bool quited = false;
-        Game(Config& c, GLFWwindow* w);
+        explicit Game(GLFWwindow* w);
         ~Game();
         void update(float timestep);
         void render(float delta, float catchup, glm::ivec2 screensize);
         void ongui();
-        Config& getConfig(){return config;}
         DebugOptions& getDebugOptions(){return debugOptions;}
     };
 

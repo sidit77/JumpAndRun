@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include "game.h"
 #include "editor/keyhelper.h"
+#include "service.h"
 #include <imgui.h>
 #include <iostream>
 #include <memory>
@@ -10,15 +11,14 @@
 using namespace jnr;
 using namespace glm;
 
-Game::Game(Config& c, GLFWwindow* w) :
-        config(c),
+Game::Game(GLFWwindow* w) :
         debugOptions(),
         window(w),
         cam(),
         player(50, 290, "assets/character/character_data.json", "assets/character/character_atlas.png"),
         primitiveRenderer(std::make_shared<PrimitiveRenderer>()),
         lastInput(),
-        level(std::make_shared<LevelWrapper>(getOrDefault<std::string>(config["level"]["name"], "assets/levels/level1.dat")))
+        level(std::make_shared<LevelWrapper>(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat")))
 {
     editor_open = false;
     player.setLevel(level);
@@ -80,7 +80,7 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
         player.draw(delta, catchup, cam);
     } else {
         if(!editor)
-            editor = std::make_unique<LevelEditor>(config, cam, level, primitiveRenderer);
+            editor = std::make_unique<LevelEditor>(cam, level, primitiveRenderer);
 
         editor->render(delta, catchup, screensize);
         player.draw(0, 0, cam);
@@ -96,6 +96,7 @@ void Game::render(float delta, float catchup, glm::ivec2 screensize) {
 Game::~Game() = default;
 
 void Game::ongui() {
+    auto& config = *jnr::services::config;
     static bool settings = false;
     static bool demo = false;
     guihelper::beginInfoOverlay(config["ui"]["overlay"]);

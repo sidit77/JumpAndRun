@@ -6,6 +6,7 @@
 #include "util/mixedmath.h"
 #include "util/guihelper.h"
 #include "editor/keyhelper.h"
+#include "service.h"
 
 using namespace glm;
 
@@ -22,8 +23,9 @@ glm::vec2 jnr::LevelEditor::toWorldSpace(ImVec2 v){
     return clicpos;
 }
 
-jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera& c, std::shared_ptr<jnr::LevelWrapper> l, std::shared_ptr<PrimitiveRenderer> pr)
-: config(con), cam(c), level(std::move(l)), primitiveRenderer(std::move(pr)) {
+jnr::LevelEditor::LevelEditor(jnr::Camera& c, std::shared_ptr<jnr::LevelWrapper> l, std::shared_ptr<PrimitiveRenderer> pr)
+: cam(c), level(std::move(l)), primitiveRenderer(std::move(pr)) {
+    auto& config = *jnr::services::config;
     grid = getOrDefault(config["editor"]["grid"], 0);
     editModes.emplace_back(new SelectMode(*this));
     editModes.emplace_back(new HitboxEditMode(*this));
@@ -32,6 +34,7 @@ jnr::LevelEditor::LevelEditor(jnr::Config& con, jnr::Camera& c, std::shared_ptr<
 }
 
 jnr::LevelEditor::~LevelEditor() {
+    auto& config = *jnr::services::config;
     config["editor"]["grid"] = grid;
     //level->save();
     //level->rebuildMesh();
@@ -101,6 +104,7 @@ bool KeyButton(const char* label, bool enabled, jnr::MKey key){
 
 bool jnr::LevelEditor::onGui() {
     bool open = true;
+    auto& config = *jnr::services::config;
     guihelper::beginSaved(config["ui"]["editor"],"Editor", &open, ImGuiWindowFlags_AlwaysAutoResize);
     {
         if(KeyButton("Reload", level->hasChanges() && level->onDisk(),MKey::NONE)){

@@ -4,16 +4,43 @@
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
+#include <ttvfs.h>
 #include "game.h"
+#include "service.h"
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
 }
 
-void configureWindow(GLFWwindow* window, jnr::Config& conf);
-void backupWindow(GLFWwindow* window, jnr::Config& conf);
+void configureWindow(GLFWwindow* window);
 
 int main() {
+
+    jnr::services::config = std::make_shared<jnr::Config>("config.toml");
+
+    //ttvfs::Root vfs;
+    //vfs.AddLoader(new ttvfs::DiskLoader);
+//
+    //ttvfs::File *vf = vfs.GetFile("config.toml");
+    //if(!vf)
+    //{
+    //    printf("ERROR: myfile.txt does not exist\n");
+    //    return 1;
+    //}
+    //if(!vf->open("r"))
+    //{
+    //    printf("ERROR: Failed to open myfile.txt for reading\n");
+    //    return 2;
+    //}
+//
+    //char buf[513];
+    //size_t bytes = vf->read(buf, 512);
+    //buf[bytes] = 0;
+//
+    //puts(buf);
+//
+    //vf->close();
+
     GLFWwindow* window;
 
     if (!glfwInit())
@@ -29,16 +56,14 @@ int main() {
     glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
 
-    jnr::Config config("config.toml");
     window = glfwCreateWindow(1280, 720, "Jump And Run", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
     }
-    glfwSetWindowUserPointer(window, &config);
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window,int w,int h){
         if(glfwGetWindowMonitor(window) == NULL){
-            auto* config = static_cast<jnr::Config *>(glfwGetWindowUserPointer(window));
+            auto* config = jnr::services::config.get();
             (*config)["display"]["w"] = w;
             (*config)["display"]["h"] = h;
         }
@@ -46,7 +71,7 @@ int main() {
 
     glfwSetWindowPosCallback(window, [](GLFWwindow* window,int x,int y){
         if(glfwGetWindowMonitor(window) == NULL){
-            auto* config = static_cast<jnr::Config *>(glfwGetWindowUserPointer(window));
+            auto* config = jnr::services::config.get();
             (*config)["display"]["x"] = x;
             (*config)["display"]["y"] = y;
         }
@@ -55,7 +80,7 @@ int main() {
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-    configureWindow(window, config);
+    configureWindow(window);
 
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
@@ -78,15 +103,15 @@ int main() {
 
 
     {
-        jnr::Game game(config, window);
+        jnr::Game game(window);
 
         double lastupdate = glfwGetTime();
         double lastframe = glfwGetTime();
 
         while (!game.quited){
-            if(game.getConfig().dirty){
-                game.getConfig().dirty = false;
-                configureWindow(window, config);
+            if(jnr::services::config->dirty){
+                jnr::services::config->dirty = false;
+                configureWindow(window);
             }
             while (glfwGetTime() - lastupdate > 1.0 / game.getDebugOptions().timestep) {
                 lastupdate += 1.0 / game.getDebugOptions().timestep;
@@ -117,7 +142,7 @@ int main() {
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            glfwSwapInterval(config["display"]["vsync"].as<int>());
+            glfwSwapInterval((*jnr::services::config)["display"]["vsync"].as<int>());
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
@@ -128,7 +153,8 @@ int main() {
     return 0;
 }
 
-void configureWindow(GLFWwindow* window, jnr::Config& conf){
+void configureWindow(GLFWwindow* window){
+    auto& conf = *jnr::services::config;
     if(conf["display"]["fullscreen"].as<bool>()) {
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
