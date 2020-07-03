@@ -4,16 +4,15 @@
 #include <optional>
 #include "../util/noncopyable.h"
 #include "../leveleditor.h"
-#include "editormath.h"
 
 namespace jnr {
 
-    class LevelEditorMode;
+    class LevelEditor;
 
     class EditMode : private NonCopyable{
     protected:
         std::string name;
-        jnr::LevelEditorMode& editor;
+        jnr::LevelEditor& editor;
 
         PrimitiveRenderer& getPrimitveRenderer();
         Camera& getCamera();
@@ -24,7 +23,7 @@ namespace jnr {
         void saveSnapshot();
         float getScale();
     public:
-        EditMode(jnr::LevelEditorMode& e, std::string n) : editor(e), name(std::move(n)){}
+        EditMode(jnr::LevelEditor& e, std::string n) : editor(e), name(std::move(n)){}
         const std::string& getName(){return name;}
         virtual void render() = 0;
         virtual void onGui() = 0;
@@ -43,7 +42,7 @@ namespace jnr {
         std::vector<AABB>& getHitboxes(bool mut = false);
         std::optional<AABB> getGroupAABB();
     public:
-        HitboxEditMode(LevelEditorMode& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};
+        HitboxEditMode(LevelEditor& e) : EditMode(e, "Edit Hitboxes"), interactionMode(InteractionMode::SELECTING) {};
         void render() override;
         void onGui() override;
         void wipe() override;
@@ -51,7 +50,7 @@ namespace jnr {
 
     class SelectMode : public EditMode {
     public:
-        SelectMode(LevelEditorMode& e) : EditMode(e, "Dummy") {};
+        SelectMode(LevelEditor& e) : EditMode(e, "Dummy") {};
     private:
         void render() override;
         void onGui() override;

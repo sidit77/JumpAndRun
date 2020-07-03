@@ -14,17 +14,17 @@ namespace jnr {
         bool showPlayerHitbox = false;
     };
 
-    class PlayMode : private NonCopyable{
+    class Game : private NonCopyable{
     protected:
-        std::shared_ptr<DebugOptions> debugOptions;
-        std::shared_ptr<Camera> cam;
-        std::shared_ptr<Player> player;
-        std::shared_ptr<PrimitiveRenderer> primitiveRenderer;
-        std::shared_ptr<LevelWrapper> level;
+        DebugOptions debugOptions;
+        Camera cam;
+        Player player;
+        PrimitiveRenderer primitiveRenderer;
+        LevelWrapper level;
     private:
         Input lastInput;
     public:
-        PlayMode();
+        Game();
         virtual void update(float timestep);
         virtual void render(float delta, float catchup);
         virtual void onGui();

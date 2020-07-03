@@ -1,5 +1,5 @@
 #include <iostream>
-#include <glad/glad.h>
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
@@ -8,43 +8,16 @@
 #include "leveleditor.h"
 #include "service.h"
 
-void error_callback(int error, const char* description) {
-    std::cout << "Error" << description << std::endl;
-}
-
-void configureWindow();
-
 int main() {
 
     jnr::services::config = std::make_unique<jnr::Config>("config.toml");
 
-    //ttvfs::Root vfs;
-    //vfs.AddLoader(new ttvfs::DiskLoader);
-//
-    //ttvfs::File *vf = vfs.GetFile("config.toml");
-    //if(!vf)
-    //{
-    //    printf("ERROR: myfile.txt does not exist\n");
-    //    return 1;
-    //}
-    //if(!vf->open("r"))
-    //{
-    //    printf("ERROR: Failed to open myfile.txt for reading\n");
-    //    return 2;
-    //}
-//
-    //char buf[513];
-    //size_t bytes = vf->read(buf, 512);
-    //buf[bytes] = 0;
-//
-    //puts(buf);
-//
-    //vf->close();
-
     if (!glfwInit())
         return -1;
 
-    glfwSetErrorCallback(error_callback);
+    glfwSetErrorCallback([](int error, const char* description) {
+        std::cout << "Error" << description << std::endl;
+    });
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -89,7 +62,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 450");
 
     {
-        std::unique_ptr<jnr::PlayMode> game = std::unique_ptr<jnr::PlayMode>(new jnr::LevelEditorMode());
+        auto game = std::unique_ptr<jnr::Game>(new jnr::LevelEditor());
         game->run();
     }
 
@@ -99,18 +72,3 @@ int main() {
     return 0;
 }
 
-void configureWindow(){
-    auto& conf = *jnr::services::config;
-    if(conf["display"]["fullscreen"].as<bool>()) {
-        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        glfwSetWindowMonitor(jnr::services::window.get(), monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
-    } else {
-        glfwSetWindowMonitor(jnr::services::window.get(), NULL,
-                             conf["display"]["x"].as<int>(),
-                             conf["display"]["y"].as<int>(),
-                             conf["display"]["w"].as<int>(),
-                             conf["display"]["h"].as<int>(),
-                             GLFW_DONT_CARE);
-    }
-}

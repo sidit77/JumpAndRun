@@ -8,16 +8,16 @@
 using namespace jnr;
 using namespace glm;
 
-PlayMode::PlayMode():
-        debugOptions(std::make_shared<DebugOptions>()),
-        cam(std::make_shared<Camera>()),
-        player(std::make_shared<Player>("assets/character/character_data.json", "assets/character/character_atlas.png")),
-        primitiveRenderer(std::make_shared<PrimitiveRenderer>()),
-        level(std::make_shared<LevelWrapper>(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat")))
+Game::Game():
+        debugOptions(),
+        cam(),
+        player("assets/character/character_data.json", "assets/character/character_atlas.png"),
+        primitiveRenderer(),
+        level(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat"))
 {
 }
 
-void PlayMode::update(float timestep) {
+void Game::update(float timestep) {
     Input input{};
     if(glfwGetKey(services::window.get(), GLFW_KEY_A) == GLFW_PRESS)
         input.move.x -= 1.0f;
@@ -43,39 +43,39 @@ void PlayMode::update(float timestep) {
 
     input.jumpDown = !lastInput.jump && input.jump;
     lastInput = input;
-    player->update(timestep, input, level->get(false));
+    player.update(timestep, input, level.get(false));
 }
 
-void PlayMode::render(float delta, float catchup) {
+void Game::render(float delta, float catchup) {
     ivec2 screensize;
     glfwGetFramebufferSize(services::window.get(), &screensize.x, &screensize.y);
-    cam->aspect = (float)screensize.x / screensize.y;
-    cam->position = glm::mix(cam->position, player->pos + player->vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
-    cam->scale = glm::mix(cam->scale, camera::default_scale, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
-    cam->update();
+    cam.aspect = (float)screensize.x / screensize.y;
+    cam.position = glm::mix(cam.position, player.pos + player.vel * catchup, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
+    cam.scale = glm::mix(cam.scale, camera::default_scale, glm::clamp(1-pow(0.1f, delta),0.0f, 1.0f));
+    cam.update();
 
     {
         colors::color fill_color(0xF0006EAB);
         colors::color line_color(0xFF00293F);
-        for (const AABB &box : level->get().hitboxes) {
-            primitiveRenderer->drawAABB(box.low, box.high, fill_color, 0.0f);
-            primitiveRenderer->drawAABBOutlineP(box.low, box.high, line_color, 0.1f, 2);
+        for (const AABB &box : level.get().hitboxes) {
+            primitiveRenderer.drawAABB(box.low, box.high, fill_color, 0.0f);
+            primitiveRenderer.drawAABBOutlineP(box.low, box.high, line_color, 0.1f, 2);
         }
-        primitiveRenderer->drawQuad(vec2(600, 300) + cam->position / 4.0f, vec2(800,300), line_color, -1.0f, vec2(0.5));
+        primitiveRenderer.drawQuad(vec2(600, 300) + cam.position / 4.0f, vec2(800,300), line_color, -1.0f, vec2(0.5));
     }
 
-    if(debugOptions->showPlayerHitbox)
-        player->drawDebug(delta, catchup, *primitiveRenderer);
+    if(debugOptions.showPlayerHitbox)
+        player.drawDebug(delta, catchup, primitiveRenderer);
 
-    primitiveRenderer->render(*cam);
-    player->draw(delta, catchup, *cam);
+    primitiveRenderer.render(cam);
+    player.draw(delta, catchup, cam);
 }
 
-void PlayMode::onGui() {
+void Game::onGui() {
 
 }
 
-void PlayMode::run() {
+void Game::run() {
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -102,9 +102,9 @@ void PlayMode::run() {
                     f ? mode->width : w, f ? mode->height : h, GLFW_DONT_CARE);
             glfwSwapInterval(getOrDefault((*services::config)["display"]["vsync"], 1));
         }
-        while (glfwGetTime() - lastupdate > 1.0 / debugOptions->timestep) {
-            lastupdate += 1.0 / debugOptions->timestep;
-            update(debugOptions->speed * (1.0 / debugOptions->timestep));
+        while (glfwGetTime() - lastupdate > 1.0 / debugOptions.timestep) {
+            lastupdate += 1.0 / debugOptions.timestep;
+            update(debugOptions.speed * (1.0 / debugOptions.timestep));
         }
         glm::ivec2 screensize;
         glfwGetFramebufferSize(jnr::services::window.get(), &screensize.x, &screensize.y);
@@ -117,8 +117,8 @@ void PlayMode::run() {
         ImGui::NewFrame();
 
         double delta = glfwGetTime() - lastframe;
-        render(debugOptions->speed * delta,
-               debugOptions->speed * (glfwGetTime() - lastupdate) * (debugOptions->movement_smoothing ? 1 : 0));
+        render(debugOptions.speed * delta,
+               debugOptions.speed * (glfwGetTime() - lastupdate) * (debugOptions.movement_smoothing ? 1 : 0));
         lastframe += delta;
 
 

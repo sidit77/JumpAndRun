@@ -1,6 +1,5 @@
 #pragma once
 
-#include <imgui.h>
 #include "game.h"
 #include "util/undobuffer.h"
 #include "editor/editmode.h"
@@ -27,7 +26,7 @@ namespace jnr {
 
     class EditMode;
 
-    class LevelEditorMode : public PlayMode {
+    class LevelEditor : public Game {
     private:
         bool editing;
         jnr::UndoBuffer<flatbuffers::FlatBufferBuilder, 10> undoBuffer;
@@ -42,8 +41,8 @@ namespace jnr {
     public:
         friend class EditMode;
 
-        LevelEditorMode();
-        ~LevelEditorMode();
+        LevelEditor();
+        ~LevelEditor();
 
         void update(float timestep) override;
         void render(float delta, float catchup) override;

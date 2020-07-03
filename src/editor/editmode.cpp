@@ -1,20 +1,21 @@
 #include <iostream>
 #include "editmode.h"
 #include "keyhelper.h"
+#include "editormath.h"
 
 using namespace jnr;
 using namespace glm;
 
 jnr::PrimitiveRenderer &jnr::EditMode::getPrimitveRenderer() {
-    return *editor.primitiveRenderer;
+    return editor.primitiveRenderer;
 }
 
 jnr::Camera &jnr::EditMode::getCamera() {
-    return *editor.cam;
+    return editor.cam;
 }
 
 jnr::LevelT &jnr::EditMode::getLevel(bool mut) {
-    return editor.level->get(mut);
+    return editor.level.get(mut);
 }
 
 bool jnr::EditMode::isGridEnabled() {
