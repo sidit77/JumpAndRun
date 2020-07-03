@@ -34,3 +34,7 @@
 	path = libs/flatbuffers
 	url = https://github.com/google/flatbuffers.git
 	branch = master
+[submodule "ttvfs"]
+	path = libs/ttvfs
+	url = https://github.com/fgenesis/ttvfs.git
+	branch = master

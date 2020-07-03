@@ -11,6 +11,19 @@ set(GLFW_USE_HYBRID_HPG ON CACHE BOOL "" FORCE)
 set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
 
+
+add_definitions("-DVFS_LARGEFILE_SUPPORT")
+add_definitions("-DVFS_IGNORE_CASE")
+add_definitions("-DVFS_SUPPORT_ZIP")
+
+if(NOT MSVC)
+    if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
+    endif()
+endif()
+
+add_subdirectory(libs/ttvfs/ttvfs)
+add_subdirectory(libs/ttvfs/ttvfs_zip)
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/resourcemanager)
 add_subdirectory(libs/flatbuffers ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build EXCLUDE_FROM_ALL)
@@ -28,6 +41,8 @@ include_directories(libs/creature-runtime/gason)
 include_directories(libs/stb)
 include_directories(libs/tinytoml/include)
 include_directories(libs/cpp-colors/include)
+include_directories(libs/ttvfs/ttvfs)
+include_directories(libs/ttvfs/ttvfs_zip)
 
 
 add_library(glad "libs/glad/src/glad.c")
@@ -86,7 +101,7 @@ endif()
 
 add_dependencies(JumpAndRun schema)
 
-target_link_libraries(JumpAndRun glfw glad imgui gason creature-runtime flatbuffers)
+target_link_libraries(JumpAndRun glfw glad imgui gason creature-runtime flatbuffers ttvfs)
 
 set (source "${CMAKE_SOURCE_DIR}/assets")
 set (destination "${CMAKE_CURRENT_BINARY_DIR}/assets")
