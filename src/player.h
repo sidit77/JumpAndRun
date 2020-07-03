@@ -53,7 +53,6 @@ namespace jnr {
     private:
         std::unique_ptr<CreatureRenderer> creature_renderer;
         std::unique_ptr<CreatureModule::CreatureManager> creature_manager;
-        std::shared_ptr<LevelWrapper> level;
         AABB foot_hitbox;
         AABB l_arm_hitbox;
         AABB r_arm_hitbox;
@@ -72,16 +71,13 @@ namespace jnr {
         glm::vec2 vel;
         glm::vec2 force;
 
-        Player(float x, float y, const std::string& creature_path, const std::string& texture_path);
+        Player(const std::string& creature_path, const std::string& texture_path);
 
-        void update(float timestep, Input input);
+        void update(float timestep, Input input, LevelT& level);
 
         void draw(float delta, float catchup, Camera& cam);
         void drawDebug(float delta, float catchup, PrimitiveRenderer& pr);
         void ongui(GuiSection);
-
-        const LevelWrapper* getLevel() const;
-        void setLevel(std::shared_ptr<LevelWrapper> level);
     };
 
 

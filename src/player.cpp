@@ -38,12 +38,12 @@ namespace jnr::playerstates::states {
     State idle       {5, "Idle",StateTraits::CAN_JUMP};
 }
 
-Player::Player(float x, float y, const std::string& creature_path, const std::string& texture_path) :
+Player::Player(const std::string& creature_path, const std::string& texture_path) :
     hitbox{vec2(-20,0),vec2(20,70)},
     foot_hitbox{vec2(-19, -1), vec2(19,1)},
     l_arm_hitbox{vec2(-23,15),vec2(-19,69)},
     r_arm_hitbox{vec2(19,15),vec2(23,69)},
-    pos(x,y),
+    pos(0,0),
     vel(0,0),
     force(0,0),
     state(&states::jumping){
@@ -68,10 +68,7 @@ Player::Player(float x, float y, const std::string& creature_path, const std::st
 }
 
 
-void Player::update(float timestep, Input input) {
-    if(!level)
-        return;
-
+void Player::update(float timestep, Input input, LevelT& level) {
     statetime += timestep;
     if(*state == states::still && statetime > 2)
         setState(&states::idle);
@@ -142,7 +139,7 @@ void Player::update(float timestep, Input input) {
     float remainingtime = timestep;
     //std::cout << "start (" << to_string(vel) << ")";
     for(int i = 0; i < 10 && remainingtime > timestep * 0.05f; i++) {
-        CollisionInfo info = physics::MovingBoxVsBoxes(pos, vel * remainingtime, hitbox, level->get().hitboxes);
+        CollisionInfo info = physics::MovingBoxVsBoxes(pos, vel * remainingtime, hitbox, level.hitboxes);
         if (info.valid) {
             //pos += info.normal * info.depth;
             pos += vel * remainingtime * info.time;
@@ -162,7 +159,7 @@ void Player::update(float timestep, Input input) {
         }
     }
     //std::cout << " > result(" << jnr::checkAABB(pos, hitbox, platforms) << ")" << std::endl;
-    if(physics::BoxVsBoxes(pos, foot_hitbox, level->get().hitboxes)) {
+    if(physics::BoxVsBoxes(pos, foot_hitbox, level.hitboxes)) {
         if(abs(force.x) > 10){
             setState(&states::walking);
         } else if(!(*state == states::idle)){
@@ -171,8 +168,8 @@ void Player::update(float timestep, Input input) {
     }else if(vel.y < 0 && !all(state->traits, StateTraits::FALLING))
         setState(&states::falling);
 
-    onLeftWall = physics::BoxVsBoxes(pos, l_arm_hitbox, level->get().hitboxes);
-    onRightWall = physics::BoxVsBoxes(pos, r_arm_hitbox, level->get().hitboxes);
+    onLeftWall = physics::BoxVsBoxes(pos, l_arm_hitbox, level.hitboxes);
+    onRightWall = physics::BoxVsBoxes(pos, r_arm_hitbox, level.hitboxes);
 
     if(((onLeftWall && force.x < 0) || (onRightWall && force.x > 0)) && all(state->traits, StateTraits::IN_AIR)) // && all(state->traits, StateTraits::FALLING)
         setState(&states::wall_slide);
@@ -227,13 +224,5 @@ void Player::drawDebug(float delta, float catchup, PrimitiveRenderer& pr) {
     drawAABB(pr, pos + vel * catchup, l_arm_hitbox, colors::colorF(0.6f, 0.42f,0.42f,1.00f));
     drawAABB(pr, pos + vel * catchup, foot_hitbox , colors::colorF(0.6f, 0.42f,1.00f,0.42f));
 
-}
-
-void Player::setLevel(std::shared_ptr<LevelWrapper> l) {
-    level = std::move(l);
-}
-
-const LevelWrapper *Player::getLevel() const {
-    return level.get();
 }
 

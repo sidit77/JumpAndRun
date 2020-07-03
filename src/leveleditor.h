@@ -1,12 +1,10 @@
 #pragma once
 
 #include <imgui.h>
-#include "rendering/camera.h"
-#include "rendering/primitiverenderer.h"
-#include "level.h"
-#include "util/config.h"
+#include "game.h"
 #include "util/undobuffer.h"
 #include "editor/editmode.h"
+
 
 namespace jnr {
 
@@ -29,13 +27,11 @@ namespace jnr {
 
     class EditMode;
 
-    class LevelEditor : private NonCopyable {
+    class LevelEditorMode : public GameMode {
     private:
-        jnr::Camera& cam;
+        jnr::PlayMode playMode;
+        bool editing;
         jnr::UndoBuffer<flatbuffers::FlatBufferBuilder, 10> undoBuffer;
-        std::shared_ptr<jnr::LevelWrapper> level;
-        std::shared_ptr<jnr::PrimitiveRenderer> primitiveRenderer;
-
         int grid = 0;
         float gridspacing;
         std::vector<std::unique_ptr<jnr::EditMode>> editModes;
@@ -46,14 +42,15 @@ namespace jnr {
         void restore(bool undo);
     public:
         friend class EditMode;
-        LevelEditor(jnr::Camera& cam, std::shared_ptr<jnr::LevelWrapper> level, std::shared_ptr<jnr::PrimitiveRenderer> pr);
-        ~LevelEditor();
 
-        void render(float delta, float catchup, glm::ivec2 screensize);
-        bool onGui();
+        LevelEditorMode();
+        ~LevelEditorMode();
 
+        void update(float timestep) override;
+        void render(float delta, float catchup) override;
+        void onGui() override;
+        bool canClose() override;
     };
-
 
 }
 

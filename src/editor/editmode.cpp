@@ -10,7 +10,7 @@ jnr::PrimitiveRenderer &jnr::EditMode::getPrimitveRenderer() {
 }
 
 jnr::Camera &jnr::EditMode::getCamera() {
-    return editor.cam;
+    return *editor.cam;
 }
 
 jnr::LevelT &jnr::EditMode::getLevel(bool mut) {

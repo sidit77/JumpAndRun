@@ -24,7 +24,7 @@
 * ~~Rename physics functions to sensible things~~
 * ~~Save settings window pos~~
 * Save keybindings in config
-* Figure out the lifetime mess that is the game <-> leveleditor relationship
+* ~~Figure out the lifetime mess that is the game <-> leveleditor relationship~~
 * Figure out a way to display console output on msvc
 
 #### Editor

@@ -5,8 +5,7 @@
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
 #include <ttvfs.h>
-#include "game.h"
-#include "service.h"
+#include "leveleditor.h"
 
 void error_callback(int error, const char* description) {
     std::cout << "Error" << description << std::endl;
@@ -77,6 +76,7 @@ int main() {
 
     glfwMakeContextCurrent(jnr::services::window.get());
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+    configureWindow();
 
     glClearColor(0.043f, 0.31f, 0.424f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -98,19 +98,19 @@ int main() {
 
 
     {
-        jnr::Game game;
+        std::unique_ptr<jnr::GameMode> game = std::unique_ptr<jnr::GameMode>(new jnr::LevelEditorMode());
 
         double lastupdate = glfwGetTime();
         double lastframe = glfwGetTime();
 
-        while (!game.quited){
+        while (!(glfwWindowShouldClose(jnr::services::window.get()) && game->canClose())){
             if(jnr::services::config->dirty){
                 jnr::services::config->dirty = false;
                 configureWindow();
             }
-            while (glfwGetTime() - lastupdate > 1.0 / game.getDebugOptions().timestep) {
-                lastupdate += 1.0 / game.getDebugOptions().timestep;
-                game.update(game.getDebugOptions().speed * (1.0 / game.getDebugOptions().timestep));
+            while (glfwGetTime() - lastupdate > 1.0 / game->getDebugOptions().timestep) {
+                lastupdate += 1.0 / game->getDebugOptions().timestep;
+                game->update(game->getDebugOptions().speed * (1.0 / game->getDebugOptions().timestep));
 
             }
 
@@ -125,14 +125,13 @@ int main() {
             ImGui::NewFrame();
 
             double delta = glfwGetTime() - lastframe;
-            game.render(
-                    game.getDebugOptions().speed * delta,
-                    game.getDebugOptions().speed * (glfwGetTime() - lastupdate) * (game.getDebugOptions().movement_smoothing ? 1 : 0),
-                    screensize);
+            game->render(
+                    game->getDebugOptions().speed * delta,
+                    game->getDebugOptions().speed * (glfwGetTime() - lastupdate) * (game->getDebugOptions().movement_smoothing ? 1 : 0));
             lastframe += delta;
 
 
-            game.ongui();
+            game->onGui();
             //ImGui::Checkbox("Fullsceen")
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

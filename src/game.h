@@ -1,13 +1,12 @@
 #pragma once
 
 #include <vector>
-#include <GLFW/glfw3.h>
-#include "player.h"
-#include "level.h"
-#include "leveleditor.h"
-#include "util/config.h"
-#include "rendering/camera.h"
 #include "rendering/primitiverenderer.h"
+#include <GLFW/glfw3.h>
+#include "level.h"
+#include "rendering/camera.h"
+#include "service.h"
+#include "player.h"
 
 namespace jnr {
 
@@ -18,24 +17,45 @@ namespace jnr {
         bool showPlayerHitbox = false;
     };
 
-    class Game : private NonCopyable{
-    private:
-        DebugOptions debugOptions;
-        Camera cam;
-        Player player;
+    class GameMode : private NonCopyable {
+    protected:
+        std::shared_ptr<DebugOptions> debugOptions;
+        std::shared_ptr<Camera> cam;
+        std::shared_ptr<Player> player;
         std::shared_ptr<PrimitiveRenderer> primitiveRenderer;
         std::shared_ptr<LevelWrapper> level;
-        std::unique_ptr<LevelEditor> editor;
-        bool editor_open;
+    public:
+        explicit GameMode(const GameMode* parent){
+            debugOptions = parent->debugOptions;
+            cam = parent->cam;
+            player = parent->player;
+            primitiveRenderer = parent->primitiveRenderer;
+            level = parent->level;
+        };
+        GameMode() :
+        debugOptions(std::make_shared<DebugOptions>()),
+        cam(std::make_shared<Camera>()),
+        player(std::make_shared<Player>("assets/character/character_data.json", "assets/character/character_atlas.png")),
+        primitiveRenderer(std::make_shared<PrimitiveRenderer>()),
+        level(std::make_shared<LevelWrapper>(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat")))
+        {};
+
+        virtual bool canClose(){return true;}
+        virtual void update(float timestep) = 0;
+        virtual void render(float delta, float catchup) = 0;
+        virtual void onGui() = 0;
+        DebugOptions& getDebugOptions(){return *debugOptions;}
+    };
+
+    class PlayMode : public GameMode {
+    private:
         Input lastInput;
     public:
-        bool quited = false;
-        Game();
-        ~Game();
-        void update(float timestep);
-        void render(float delta, float catchup, glm::ivec2 screensize);
-        void ongui();
-        DebugOptions& getDebugOptions(){return debugOptions;}
+        PlayMode() : GameMode(){};
+        PlayMode(const GameMode* parent) : GameMode(parent){};
+        void update(float timestep) override;
+        void render(float delta, float catchup) override;
+        void onGui() override;
     };
 
 }
