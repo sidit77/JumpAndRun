@@ -1,13 +1,12 @@
 #include "leveleditor.h"
 
-
-#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <iostream>
 #include <algorithm>
+#include "util/window.h"
+#include "util/config.h"
 #include "util/mixedmath.h"
 #include "editor/keyhelper.h"
-#include "service.h"
 #include "editor/editormath.h"
 
 using namespace glm;

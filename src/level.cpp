@@ -1,7 +1,6 @@
 #include "level.h"
 
-#include <utility>
-#include <fstream>
+#include "util/filesystem.h"
 
 namespace flatbuffers {
     jnr::LevelVec2 convert(const glm::vec2& v){
@@ -46,16 +45,10 @@ jnr::LevelWrapper::LevelWrapper(std::string  p) : path(std::move(p)) {
 }
 
 bool jnr::LevelWrapper::reload() {
-    std::ifstream file;
-    file.open(path, std::ios::binary | std::ios::in);
-    if(file.is_open()) {
-        file.seekg(0, std::ios::end);
-        int length = file.tellg();
-        file.seekg(0, std::ios::beg);
-        char *data = new char[length];
-        file.read(data, length);
-        file.close();
-        GetLevel(data)->UnPackTo(&level);
+    int size;
+    const void* buffer = services::filesystem->readAllBytes(path, &size);
+    if(buffer) {
+        GetLevel(buffer)->UnPackTo(&level);
         _hasChanges = false;
         _onDisk = true;
         return true;
@@ -64,13 +57,9 @@ bool jnr::LevelWrapper::reload() {
 }
 
 bool jnr::LevelWrapper::save() {
-    std::ofstream file;
-    file.open(path, std::ios::binary | std::ios::out);
-    if(file.is_open()){
-        flatbuffers::FlatBufferBuilder fbb;
-        fbb.Finish(Level::Pack(fbb, &level));
-        file.write((char*)fbb.GetBufferPointer(), fbb.GetSize());
-        file.close();
+    flatbuffers::FlatBufferBuilder fbb;
+    fbb.Finish(Level::Pack(fbb, &level));
+    if(services::filesystem->writeAllBytes(path, fbb.GetBufferPointer(), fbb.GetSize())){
         _hasChanges = false;
         _onDisk = true;
         return true;

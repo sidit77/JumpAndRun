@@ -48,5 +48,10 @@ namespace jnr{
         }
 
     };
+
+    namespace services {
+        inline std::unique_ptr<Config> config;
+    }
+
 }
 

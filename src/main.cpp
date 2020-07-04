@@ -1,16 +1,18 @@
 #include <iostream>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
-#include <ttvfs.h>
+#include "util/window.h"
+#include "util/config.h"
+#include "util/filesystem.h"
 #include "leveleditor.h"
-#include "service.h"
+
 
 int main() {
 
     jnr::services::config = std::make_unique<jnr::Config>("config.toml");
+    jnr::services::filesystem = std::make_unique<jnr::FileSystem>();
 
     if (!glfwInit())
         return -1;

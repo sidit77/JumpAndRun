@@ -1,9 +1,9 @@
 #include "game.h"
 #include <MeshBone.h>
-#include <GLFW/glfw3.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_glfw.h>
-#include "service.h"
+#include "util/window.h"
+#include "util/config.h"
 
 using namespace jnr;
 using namespace glm;
