@@ -12,7 +12,7 @@ const void *jnr::FileSystem::readAllBytes(const std::string& path, int* size) {
     ttvfs::File *vf = services::filesystem->root.GetFile(path.c_str());
     if(vf && vf->open("rb")){
         *size = vf->size();
-        ensureFit(*size);
+        ensureFit(*size + 1);
         if(vf->read(buffer.get(), *size) != *size) {
             std::cerr << "ERROR: couldn't read all of " << path << std::endl;
             *size = 0;
@@ -47,4 +47,11 @@ void jnr::FileSystem::ensureFit(int size) {
         return;
     buffersize = size;
     buffer.reset(new uint8_t[buffersize]);
+}
+
+std::string jnr::FileSystem::readAllLines(const std::string &path) {
+    int size;
+    const char* str = static_cast<const char *>(readAllBytes(path, &size));
+    buffer.get()[size] = '\0';
+    return str;
 }

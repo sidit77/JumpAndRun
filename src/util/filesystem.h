@@ -14,6 +14,7 @@ namespace jnr{
         ttvfs::Root root;
         FileSystem();
         const void* readAllBytes(const std::string& path, int* size);
+        std::string readAllLines(const std::string& path);
         bool writeAllBytes(const std::string& path, const void* data, int len);
     };
 

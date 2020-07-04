@@ -4,6 +4,7 @@
 #include <limits>
 #include <utility>
 #include <imgui.h>
+#include "util/filesystem.h"
 
 using namespace jnr;
 using namespace glm;
@@ -50,7 +51,7 @@ Player::Player(const std::string& creature_path, const std::string& texture_path
 
 
     CreatureModule::CreatureLoadDataPacket json_data;
-    CreatureModule::LoadCreatureJSONData(creature_path, json_data);
+    CreatureModule::LoadCreatureJSONDataFromString(services::filesystem->readAllLines(creature_path), json_data);
     auto creature =  std::make_shared<CreatureModule::Creature>(json_data);
     creature_renderer = std::make_unique<CreatureRenderer>(creature, std::make_shared<Texture>(texture_path));
     creature_manager = std::make_unique<CreatureModule::CreatureManager>(creature);
