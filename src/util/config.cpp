@@ -4,13 +4,13 @@
 #include <utility>
 
 jnr::Config::Config(std::string p) : path(std::move(p)), config(){
-    std::ifstream ifs("config.toml");
+    std::ifstream ifs(path);
     toml::ParseResult pr = toml::parse(ifs);
     ifs.close();
     if (pr.valid()) {
         config = pr.value;
     } else {
-        std::cout << pr.errorReason << std::endl;
+        std::cout << path << ": " << pr.errorReason << std::endl;
     }
 }
 

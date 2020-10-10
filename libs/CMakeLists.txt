@@ -25,22 +25,9 @@ set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(flatbuffers ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build EXCLUDE_FROM_ALL)
 
-
-#add_definitions("-DVFS_LARGEFILE_SUPPORT")
-#add_definitions("-DVFS_IGNORE_CASE")
-#add_definitions("-DVFS_SUPPORT_ZIP")
-#if(NOT MSVC)
-#    if(NOT CMAKE_BUILD_TYPE)
-#        set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
-#    endif()
-#endif()
-#add_subdirectory(ttvfs/ttvfs)
-#add_subdirectory(ttvfs/ttvfs_zip)
-
 set(CMAKE_POLICY_DEFAULT_CMP0054 NEW)
 set(TTVFS_BUILD_CFILEAPI OFF CACHE BOOL "Build C-style API wrapper" FORCE)
 add_subdirectory(ttvfs)
-message("${TTVFS_INCLUDE_DIRS}")
 target_include_directories(ttvfs PUBLIC "${TTVFS_INCLUDE_DIRS}")
 
 add_library(gason "creature-runtime/gason/gason.cpp")
