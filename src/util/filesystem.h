@@ -16,6 +16,9 @@ namespace jnr{
         const void* readAllBytes(const std::string& path, int* size);
         std::string readAllLines(const std::string& path);
         bool writeAllBytes(const std::string& path, const void* data, int len);
+
+        template<typename T>
+        T* readResource(const std::string& path);
     };
 
     namespace services {

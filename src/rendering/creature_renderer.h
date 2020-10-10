@@ -6,7 +6,7 @@
 #include <glclasses/buffer.h>
 #include <glclasses/texture.h>
 #include "camera.h"
-#include "../util/noncopyable.h"
+#include "util/noncopyable.h"
 
 namespace jnr {
     class CreatureRenderer : private NonCopyable{

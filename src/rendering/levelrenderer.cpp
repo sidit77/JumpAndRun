@@ -1,12 +1,11 @@
 #include "levelrenderer.h"
 
 #include <gtc/type_ptr.hpp>
-#include <glclasses/loader/shaderloading.h>
-#include <glclasses/loader/textureloading.h>
+#include "util/filesystem.h"
 
 jnr::LevelRenderer::LevelRenderer(const std::string &path, int x, int y) :
-program(glc::loader::loadProgramFromFile("assets/shader/sprite.json")),
-texture(glc::loader::loadTextureFromFile(path)),
+program(services::filesystem->readResource<glc::Program>("assets/shader/sprite.json")),
+texture(services::filesystem->readResource<glc::Texture>(path)),
 dx(x),
 dy(y)
 {

@@ -2,10 +2,10 @@
 
 #include <gtc/type_ptr.hpp>
 #include <iostream>
-#include <glclasses/loader/shaderloading.h>
+#include "util/filesystem.h"
 
 jnr::PrimitiveRenderer::PrimitiveRenderer() :
-    program(glc::loader::loadProgramFromFile("assets/shader/primitive.json")){
+    program(services::filesystem->readResource<glc::Program>("assets/shader/primitive.json")){
 
     vao.bind();
     vbo.bind(GL_ARRAY_BUFFER);

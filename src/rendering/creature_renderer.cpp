@@ -1,7 +1,7 @@
 #include "creature_renderer.h"
 
 #include <utility>
-#include <glclasses/loader/shaderloading.h>
+#include "util/filesystem.h"
 
 using namespace jnr;
 using namespace glm;
@@ -11,7 +11,7 @@ CreatureRenderer::CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_p
         texture(std::move(tex)),
         vao(),
         pos_buffer(), tex_buffer(), ind_buffer(), col_buffer(),
-        program(glc::loader::loadProgramFromFile("assets/shader/character.json"))
+        program(services::filesystem->readResource<glc::Program>("assets/shader/character.json"))
 {
 
     vao.bind();
