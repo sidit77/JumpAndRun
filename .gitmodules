@@ -10,17 +10,9 @@
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = master
-[submodule "resourcemanager"]
-	path = libs/resourcemanager
-	url = https://github.com/Johnnyborov/ResourceManager.git
-	branch = master
 [submodule "creature-runtime"]
 	path = libs/creature-runtime
 	url = https://github.com/kestrelm/Creature_Cocos2DX.git
-	branch = master
-[submodule "stb"]
-	path = libs/stb
-	url = https://github.com/nothings/stb.git
 	branch = master
 [submodule "toml"]
 	path = libs/tinytoml
@@ -38,3 +30,7 @@
 	path = libs/ttvfs
 	url = https://github.com/fgenesis/ttvfs.git
 	branch = master
+[submodule "glclasses"]
+	path = libs/glclasses
+	url = https://github.com/sidit77/GLClasses
+	branch = main

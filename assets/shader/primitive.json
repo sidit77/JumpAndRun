@@ -1,0 +1,12 @@
+{
+  "shaders":[
+    {
+      "type":"VERTEX",
+      "path":"primitive_vertex.glsl"
+    },
+    {
+      "type":"FRAGMENT",
+      "path":"primitive_fragment.glsl"
+    }
+  ]
+}

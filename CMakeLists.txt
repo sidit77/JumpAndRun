@@ -3,70 +3,14 @@ project(JumpAndRun)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_USE_HYBRID_HPG ON CACHE BOOL "" FORCE)
-
-set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
-
-
 add_definitions("-DVFS_LARGEFILE_SUPPORT")
 add_definitions("-DVFS_IGNORE_CASE")
 add_definitions("-DVFS_SUPPORT_ZIP")
 
-if(NOT MSVC)
-    if(NOT CMAKE_BUILD_TYPE)
-        set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
-    endif()
-endif()
-
-add_subdirectory(libs/ttvfs/ttvfs)
-add_subdirectory(libs/ttvfs/ttvfs_zip)
-add_subdirectory(libs/glfw)
-add_subdirectory(libs/resourcemanager)
-add_subdirectory(libs/flatbuffers ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build EXCLUDE_FROM_ALL)
-
-add_compile_definitions(_USE_MATH_DEFINES)
-file(COPY "libs/creature-runtime/MeshBone.h" "libs/creature-runtime/CreatureModule.h" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/libs/creature-runtime/include/")
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/libs/creature-runtime/include/)
-include_directories(libs/resourcemanager/include)
-include_directories(libs/glad/include)
-include_directories(libs/glfw/include)
-include_directories(libs/glm/glm)
-include_directories(libs/imgui)
-include_directories(libs/creature-runtime/gason)
-include_directories(libs/stb)
-include_directories(libs/tinytoml/include)
-include_directories(libs/cpp-colors/include)
-include_directories(libs/ttvfs/ttvfs)
-include_directories(libs/ttvfs/ttvfs_zip)
-
-
-add_library(glad "libs/glad/src/glad.c")
-add_library(gason "libs/creature-runtime/gason/gason.cpp")
-add_library(creature-runtime
-        "libs/creature-runtime/MeshBone.cpp"
-        "libs/creature-runtime/CreatureModule.cpp")
-add_library(imgui
-        "libs/imgui/imgui.cpp"
-        "libs/imgui/imgui_demo.cpp"
-        "libs/imgui/imgui_draw.cpp"
-        "libs/imgui/imgui_widgets.cpp"
-        "libs/imgui/examples/imgui_impl_glfw.cpp"
-        "libs/imgui/examples/imgui_impl_opengl3.cpp")
+add_subdirectory(libs)
 
 file(GLOB_RECURSE all_SRCS "src/*.cpp")
 file(GLOB_RECURSE all_SCHEME "src/*.fbs")
-file(GLOB_RECURSE all_RES "res/*.*" )
-
-foreach(P IN LISTS all_RES)
-    file(RELATIVE_PATH P_R ${PROJECT_SOURCE_DIR} ${P})
-    list(APPEND all_RES_rel ${P_R})
-endforeach()
-rm_embed_resources(RESOURCES ${all_RES_rel})
 
 if(FLATBUFFERS_FLATC_EXECUTABLE)
     set(FLATC_TARGET "")
@@ -93,15 +37,15 @@ add_custom_target(schema DEPENDS ${all_generated_files})
 include_directories(${generated_includes_dir})
 set_property(TARGET schema PROPERTY GENERATED_INCLUDES_DIR ${generated_includes_dir})
 
-add_executable(JumpAndRun ${all_SRCS} ${RESOURCES})
+add_executable(JumpAndRun ${all_SRCS})
 
-if(MSVC)
-    set_target_properties(JumpAndRun PROPERTIES LINK_FLAGS "/ENTRY:mainCRTStartup /SUBSYSTEM:WINDOWS")
-endif()
+#if(MSVC)
+#    set_target_properties(JumpAndRun PROPERTIES LINK_FLAGS "/ENTRY:mainCRTStartup /SUBSYSTEM:WINDOWS")
+#endif()
 
 add_dependencies(JumpAndRun schema)
 
-target_link_libraries(JumpAndRun glfw glad imgui gason creature-runtime flatbuffers ttvfs)
+target_link_libraries(JumpAndRun glclasses glfw glad imgui creature-runtime flatbuffers ttvfs ttvfs_zip tinytoml cpp-colors glm stb)
 
 set (source "${CMAKE_SOURCE_DIR}/assets")
 set (destination "${CMAKE_CURRENT_BINARY_DIR}/assets")

@@ -13,6 +13,7 @@ Game::Game():
         cam(),
         player("assets/character/character_data.json", "assets/character/character_atlas.png"),
         primitiveRenderer(),
+        levelRenderer("assets/sprites/tiles/tiles_spritesheet.png",13,13),
         level(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat"))
 {
 }

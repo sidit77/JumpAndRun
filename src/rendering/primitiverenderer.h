@@ -2,9 +2,11 @@
 
 #include <cpp-colors/color.h>
 #include <vector>
-#include "opengl/buffer.h"
-#include "opengl/shader.h"
+#include <glclasses/buffer.h>
+#include <glclasses/shader.h>
+#include <memory>
 #include "camera.h"
+#include "../util/noncopyable.h"
 
 namespace jnr {
     class PrimitiveRenderer : private NonCopyable{
@@ -16,9 +18,9 @@ namespace jnr {
             glm::uint32 color;
         };
 #pragma pack(pop)
-        jnr::VertexArray vao;
-        jnr::VertexBuffer vbo;
-        jnr::Program program;
+        glc::VertexArray vao;
+        glc::VertexBuffer vbo;
+        std::unique_ptr<glc::Program> program;
         std::vector<Vertex> lines;
         std::vector<Vertex> triangles;
 

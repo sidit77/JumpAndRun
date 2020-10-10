@@ -1,9 +1,11 @@
-#include <gtc/type_ptr.hpp>
-#include <iostream>
 #include "primitiverenderer.h"
 
+#include <gtc/type_ptr.hpp>
+#include <iostream>
+#include <glclasses/loader/shaderloading.h>
+
 jnr::PrimitiveRenderer::PrimitiveRenderer() :
-    program{std::make_shared<Shader>("res/shader/primitive_vertex.glsl", GL_VERTEX_SHADER),std::make_shared<Shader>("res/shader/primitive_fragment.glsl", GL_FRAGMENT_SHADER)}{
+    program(glc::loader::loadProgramFromFile("assets/shader/primitive.json")){
 
     vao.bind();
     vbo.bind(GL_ARRAY_BUFFER);
@@ -15,9 +17,9 @@ jnr::PrimitiveRenderer::PrimitiveRenderer() :
 }
 
 void jnr::PrimitiveRenderer::render(jnr::Camera &cam) {
-    program.bind();
+    program->bind();
     vao.bind();
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
+    glUniformMatrix4fv(program->getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
     if(!triangles.empty()) {
         glNamedBufferData(vbo.id, triangles.size() * sizeof(Vertex), triangles.data(), GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, triangles.size());

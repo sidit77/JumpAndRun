@@ -4,6 +4,7 @@
 #include "level.h"
 #include "rendering/camera.h"
 #include "player.h"
+#include "rendering/levelrenderer.h"
 
 namespace jnr {
 
@@ -20,6 +21,7 @@ namespace jnr {
         Camera cam;
         Player player;
         PrimitiveRenderer primitiveRenderer;
+        LevelRenderer levelRenderer;
         LevelWrapper level;
     private:
         Input lastInput;
