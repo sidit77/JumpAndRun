@@ -45,10 +45,9 @@ jnr::LevelWrapper::LevelWrapper(std::string  p) : path(std::move(p)) {
 }
 
 bool jnr::LevelWrapper::reload() {
-    int size;
-    const void* buffer = services::filesystem->readAllBytes(path, &size);
-    if(buffer) {
-        GetLevel(buffer)->UnPackTo(&level);
+    auto buffer = services::filesystem->loadBytes(path);
+    if(!buffer.empty()) {
+        GetLevel(buffer.data())->UnPackTo(&level);
         _hasChanges = false;
         _onDisk = true;
         return true;

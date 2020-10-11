@@ -2,19 +2,16 @@
 
 #include <memory>
 #include <ttvfs.h>
+#include <glclasses/loader.h>
 #include "noncopyable.h"
 
 namespace jnr{
-    class FileSystem : private NonCopyable{
-    private:
-        int buffersize;
-        std::unique_ptr<uint8_t> buffer;
-        void ensureFit(int size);
+class FileSystem : private NonCopyable, public glc::loader::ResourceLoader{
     public:
         ttvfs::Root root;
         FileSystem();
-        const void* readAllBytes(const std::string& path, int* size);
-        std::string readAllLines(const std::string& path);
+        std::string loadString(const std::string& path) override;
+        std::vector<char> loadBytes(const std::string &path) override;
         bool writeAllBytes(const std::string& path, const void* data, int len);
 
         template<typename T>

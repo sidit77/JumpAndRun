@@ -49,7 +49,7 @@ Player::Player(const std::string& creature_path, const std::string& texture_path
 
 
     CreatureModule::CreatureLoadDataPacket json_data;
-    CreatureModule::LoadCreatureJSONDataFromString(services::filesystem->readAllLines(creature_path), json_data);
+    CreatureModule::LoadCreatureJSONDataFromString(services::filesystem->loadString(creature_path), json_data);
     auto creature =  std::make_shared<CreatureModule::Creature>(json_data);
     creature_renderer = std::make_unique<CreatureRenderer>(creature, std::shared_ptr<glc::Texture>(services::filesystem->readResource<glc::Texture>(texture_path)));
     creature_manager = std::make_unique<CreatureModule::CreatureManager>(creature);
