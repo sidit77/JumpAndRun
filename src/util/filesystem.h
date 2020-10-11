@@ -15,8 +15,11 @@ namespace jnr{
         bool writeString(const std::string &path, const std::string &str) override;
         bool writeBytes(const std::string &path, std::vector<char> bytes) override;
         bool writeBytes(const std::string &path, const void* data, size_t len);
+
         template<typename T>
-        T* readResource(const std::string& path);
+        std::unique_ptr<T> readResource(const std::string& path){
+            return glc::loader::loadResource<T>(path, *this);
+        }
     };
 
     namespace services {

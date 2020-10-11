@@ -58,13 +58,8 @@ bool jnr::FileSystem::writeBytes(const std::string &path, std::vector<char> byte
     return writeBytes(path, bytes.data(), bytes.size());
 }
 
-template<>
-glc::Program* jnr::FileSystem::readResource<glc::Program>(const std::string &path) {
-    return glc::loader::loadResource<glc::Program>(path, *this).release();
-}
-
-template<>
-glc::Texture* jnr::FileSystem::readResource<glc::Texture>(const std::string &path) {
-    return glc::loader::loadResource<glc::Texture>(path, *this).release();
-}
+//template<typename T>
+//std::unique_ptr<T> jnr::FileSystem::readResource(const std::string &path) {
+//    return glc::loader::loadResource<T>(path, *this);
+//}
 
