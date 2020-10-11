@@ -50,6 +50,7 @@ jnr::LevelEditor::LevelEditor(){
 jnr::LevelEditor::~LevelEditor() {
     auto& config = *jnr::services::config;
     config["editor"]["grid"] = grid;
+
     //level.save();
     //level.rebuildMesh();
 }

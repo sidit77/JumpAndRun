@@ -6,14 +6,15 @@
 #include "noncopyable.h"
 
 namespace jnr{
-class FileSystem : private NonCopyable, public glc::loader::ResourceLoader{
+    class FileSystem : private NonCopyable, public glc::loader::ResourceLoader{
     public:
         ttvfs::Root root;
         FileSystem();
         std::string loadString(const std::string& path) override;
         std::vector<char> loadBytes(const std::string &path) override;
-        bool writeAllBytes(const std::string& path, const void* data, int len);
-
+        bool writeString(const std::string &path, const std::string &str) override;
+        bool writeBytes(const std::string &path, std::vector<char> bytes) override;
+        bool writeBytes(const std::string &path, const void* data, size_t len);
         template<typename T>
         T* readResource(const std::string& path);
     };

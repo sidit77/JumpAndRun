@@ -1,12 +1,9 @@
 #include "config.h"
 #include <iostream>
-#include <fstream>
 #include <utility>
 
 jnr::Config::Config(std::string p) : path(std::move(p)), config(){
-    std::ifstream ifs(path);
-    toml::ParseResult pr = toml::parse(ifs);
-    ifs.close();
+    toml::ParseResult pr = toml::parseFile(path);
     if (pr.valid()) {
         config = pr.value;
     } else {
@@ -22,7 +19,6 @@ jnr::Config::~Config() {
         myfile.close();
     }
     else std::cerr << "cannot save config!" << std::endl;
-    std::cout << "Saving..." << std::endl;
 }
 
 toml::Value& jnr::Config::operator[](const std::string &key) {

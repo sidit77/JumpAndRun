@@ -27,6 +27,7 @@ namespace jnr {
         Input lastInput;
     public:
         Game();
+        virtual ~Game() = default;
         virtual void update(float timestep);
         virtual void render(float delta, float catchup);
         virtual void onGui();

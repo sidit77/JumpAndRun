@@ -58,7 +58,7 @@ bool jnr::LevelWrapper::reload() {
 bool jnr::LevelWrapper::save() {
     flatbuffers::FlatBufferBuilder fbb;
     fbb.Finish(Level::Pack(fbb, &level));
-    if(services::filesystem->writeAllBytes(path, fbb.GetBufferPointer(), fbb.GetSize())){
+    if(services::filesystem->writeBytes(path, fbb.GetBufferPointer(), fbb.GetSize())){
         _hasChanges = false;
         _onDisk = true;
         return true;

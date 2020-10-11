@@ -11,21 +11,6 @@ jnr::FileSystem::FileSystem() {
     root.AddLoader(new ttvfs::DiskLoader);
 }
 
-bool jnr::FileSystem::writeAllBytes(const std::string& path, const void* data, int len) {
-    ttvfs::File *vf = root.GetFile(path.c_str());
-    if(vf && vf->open("wb")){
-        if(vf->write(data, len) != len) {
-            std::cerr << "ERROR: couldn't write all of " << path << std::endl;
-            return false;
-        }
-        vf->close();
-        return true;
-    }else{
-        std::cerr << "ERROR: can't open file " << path << std::endl;
-    }
-    return false;
-}
-
 std::string jnr::FileSystem::loadString(const std::string &path) {
     auto bytes = loadBytes(path);
     bytes.push_back('\0');
@@ -49,6 +34,28 @@ std::vector<char> jnr::FileSystem::loadBytes(const std::string &path) {
         std::cerr << "ERROR: can't open file " << path << std::endl;
     }
     return std::vector<char>(0);
+}
+
+bool jnr::FileSystem::writeBytes(const std::string &path, const void* data, size_t len) {
+    ttvfs::File *vf = root.GetFile(path.c_str());
+    if(vf && vf->open("wb")){
+        bool success = vf->write(data, len) == len;
+        vf->close();
+        if(success)
+            return true;
+        std::cerr << "ERROR: couldn't write all of " << path << std::endl;
+    }else{
+        std::cerr << "ERROR: can't open file " << path << std::endl;
+    }
+    return false;
+}
+
+bool jnr::FileSystem::writeString(const std::string &path, const std::string &str) {
+    return writeBytes(path, str.data(), str.size());
+}
+
+bool jnr::FileSystem::writeBytes(const std::string &path, std::vector<char> bytes) {
+    return writeBytes(path, bytes.data(), bytes.size());
 }
 
 template<>
