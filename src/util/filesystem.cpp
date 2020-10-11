@@ -2,7 +2,8 @@
 
 #include <iostream>
 #include <glclasses/loader/textureloading.h>
-#include <glclasses/loader/shaderloading.h>
+#include <glclasses/loader.h>
+#include <glclasses/shader.h>
 
 jnr::FileSystem::FileSystem() : buffersize(2048), buffer(new uint8_t[buffersize]){
     if(!ttvfs::checkCompat())
@@ -61,7 +62,7 @@ std::string jnr::FileSystem::readAllLines(const std::string &path) {
 
 template<>
 glc::Program* jnr::FileSystem::readResource<glc::Program>(const std::string &path) {
-    return glc::loader::loadProgramFromFile(path);
+    return glc::loader::loadResource<glc::Program>(path).release();
 }
 
 template<>
