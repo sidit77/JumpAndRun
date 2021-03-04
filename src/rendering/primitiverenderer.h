@@ -19,8 +19,8 @@ namespace jnr {
         };
 #pragma pack(pop)
         glc::VertexArray vao;
-        glc::VertexBuffer vbo;
-        std::unique_ptr<glc::Program> program;
+        glc::Buffer vbo;
+        glc::Program program;
         std::vector<Vertex> lines;
         std::vector<Vertex> triangles;
 

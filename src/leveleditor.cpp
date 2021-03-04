@@ -83,7 +83,7 @@ void jnr::LevelEditor::render(float delta, float catchup) {
         cam.aspect = (float) io.DisplaySize.x / io.DisplaySize.y;
         if (!io.WantCaptureMouse && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
             cam.position += convert(io.MouseDelta) * vec2(-1, 1) * ((cam.scale * 2) / io.DisplaySize.y);
-        if(!ImGui::IsAnyWindowHovered())
+        if(!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
             cam.scale = max(cam.scale - io.MouseWheel * 10 * (cam.scale / 200), 10.0f);
         cam.update();
 

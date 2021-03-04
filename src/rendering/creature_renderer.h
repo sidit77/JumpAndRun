@@ -12,9 +12,9 @@ namespace jnr {
     class CreatureRenderer : private NonCopyable{
     private:
         std::shared_ptr<CreatureModule::Creature> creature;
-        std::unique_ptr<glc::Program> program;
+        glc::Program program;
         glc::VertexArray vao;
-        glc::VertexBuffer pos_buffer, col_buffer, tex_buffer, ind_buffer;
+        glc::Buffer pos_buffer, col_buffer, tex_buffer, ind_buffer;
         std::shared_ptr<glc::Texture> texture;
     public:
         CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_ptr, std::shared_ptr<glc::Texture> tex);

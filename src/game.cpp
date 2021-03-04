@@ -1,7 +1,7 @@
 #include "game.h"
 #include <MeshBone.h>
-#include <examples/imgui_impl_opengl3.h>
-#include <examples/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
 #include "util/window.h"
 #include "util/config.h"
 

@@ -11,7 +11,7 @@ CreatureRenderer::CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_p
         texture(std::move(tex)),
         vao(),
         pos_buffer(), tex_buffer(), ind_buffer(), col_buffer(),
-        program(services::filesystem->readResource<glc::Program>("assets/shader/character.json"))
+        program(*services::filesystem->readResource<glc::Program>("assets/shader/character.json"))
 {
 
     vao.bind();
@@ -39,11 +39,11 @@ CreatureRenderer::CreatureRenderer(std::shared_ptr<CreatureModule::Creature> c_p
 void CreatureRenderer::draw(glm::vec2 pos, float scale, const Camera &cam) {
     glDepthFunc(GL_LEQUAL);
     vao.bind();
-    program->bind();
+    program.bind();
     texture->bind(GL_TEXTURE0);
-    glUniformMatrix4fv(program->getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
-    glUniform2f(program->getUniformLocation("pos"), pos.x, pos.y);
-    glUniform1f(program->getUniformLocation("scale"), scale);
+    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
+    glUniform2f(program.getUniformLocation("pos"), pos.x, pos.y);
+    glUniform1f(program.getUniformLocation("scale"), scale);
     glNamedBufferData(pos_buffer.id, creature->GetTotalNumPoints() * 3 * sizeof(glm::float32), creature->GetRenderPts(), GL_STREAM_DRAW);
     glNamedBufferData(col_buffer.id, creature->GetTotalNumPoints() * 4 * sizeof(glm::uint8), creature->GetRenderColours(), GL_STREAM_DRAW);
     ind_buffer.bind(GL_ELEMENT_ARRAY_BUFFER);

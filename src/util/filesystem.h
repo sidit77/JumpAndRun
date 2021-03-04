@@ -17,8 +17,16 @@ namespace jnr{
         bool writeBytes(const std::string &path, const void* data, size_t len);
 
         template<typename T>
-        std::unique_ptr<T> readResource(const std::string& path){
+        std::optional<T> readResource(const std::string& path){
             return glc::loader::loadResource<T>(path, *this);
+        }
+
+        template<typename T>
+        std::shared_ptr<T> makeResourcePtr(const std::string& path){
+            auto res = readResource<T>(path);
+            if(res.has_value())
+                return std::make_unique<T>(std::move(res.value()));
+            return nullptr;
         }
     };
 

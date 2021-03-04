@@ -5,7 +5,7 @@
 #include "util/filesystem.h"
 
 jnr::PrimitiveRenderer::PrimitiveRenderer() :
-    program(services::filesystem->readResource<glc::Program>("assets/shader/primitive.json")){
+    program(*services::filesystem->readResource<glc::Program>("assets/shader/primitive.json")){
 
     vao.bind();
     vbo.bind(GL_ARRAY_BUFFER);
@@ -17,9 +17,9 @@ jnr::PrimitiveRenderer::PrimitiveRenderer() :
 }
 
 void jnr::PrimitiveRenderer::render(jnr::Camera &cam) {
-    program->bind();
+    program.bind();
     vao.bind();
-    glUniformMatrix4fv(program->getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
+    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
     if(!triangles.empty()) {
         glNamedBufferData(vbo.id, triangles.size() * sizeof(Vertex), triangles.data(), GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, triangles.size());

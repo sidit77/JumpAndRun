@@ -20,9 +20,9 @@ namespace jnr {
         };
 #pragma pack(pop)
         glc::VertexArray vao;
-        glc::VertexBuffer vbo;
-        std::unique_ptr<glc::Texture> texture;
-        std::unique_ptr<glc::Program> program;
+        glc::Buffer vbo;
+        glc::Texture texture;
+        glc::Program program;
         std::vector<Vertex> sprites;
         int dx, dy;
     public:

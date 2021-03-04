@@ -4,8 +4,8 @@
 #include "util/filesystem.h"
 
 jnr::LevelRenderer::LevelRenderer(const std::string &path, int x, int y) :
-program(services::filesystem->readResource<glc::Program>("assets/shader/sprite.json")),
-texture(services::filesystem->readResource<glc::Texture>(path)),
+program(*services::filesystem->readResource<glc::Program>("assets/shader/sprite.json")),
+texture(*services::filesystem->readResource<glc::Texture>(path)),
 dx(x),
 dy(y)
 {
@@ -34,10 +34,10 @@ void jnr::LevelRenderer::drawSprite(int id, glm::vec2 pos, glm::vec2 size, float
 }
 
 void jnr::LevelRenderer::render(jnr::Camera &cam) {
-    program->bind();
-    texture->bind(GL_TEXTURE0);
+    program.bind();
+    texture.bind(GL_TEXTURE0);
     vao.bind();
-    glUniformMatrix4fv(program->getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
+    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
     if(!sprites.empty()) {
         glNamedBufferData(vbo.id, sprites.size() * sizeof(Vertex), sprites.data(), GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, sprites.size());
