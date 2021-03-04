@@ -19,7 +19,7 @@ jnr::PrimitiveRenderer::PrimitiveRenderer() :
 void jnr::PrimitiveRenderer::render(jnr::Camera &cam) {
     program.bind();
     vao.bind();
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
+    program.setUniformMatrix("cam", false, cam.matrix);
     if(!triangles.empty()) {
         glNamedBufferData(vbo.id, triangles.size() * sizeof(Vertex), triangles.data(), GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, triangles.size());

@@ -37,7 +37,7 @@ void jnr::LevelRenderer::render(jnr::Camera &cam) {
     program.bind();
     texture.bind(GL_TEXTURE0);
     vao.bind();
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
+    program.setUniformMatrix("cam", false, cam.matrix);
     if(!sprites.empty()) {
         glNamedBufferData(vbo.id, sprites.size() * sizeof(Vertex), sprites.data(), GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, sprites.size());

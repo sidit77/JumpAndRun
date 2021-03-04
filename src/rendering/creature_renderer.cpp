@@ -41,9 +41,9 @@ void CreatureRenderer::draw(glm::vec2 pos, float scale, const Camera &cam) {
     vao.bind();
     program.bind();
     texture->bind(GL_TEXTURE0);
-    glUniformMatrix4fv(program.getUniformLocation("cam"), 1, GL_FALSE, glm::value_ptr(cam.matrix));
-    glUniform2f(program.getUniformLocation("pos"), pos.x, pos.y);
-    glUniform1f(program.getUniformLocation("scale"), scale);
+    program.setUniformMatrix("cam", false, cam.matrix);
+    program.setUniform("pos", pos);
+    program.setUniform("scale", scale);
     glNamedBufferData(pos_buffer.id, creature->GetTotalNumPoints() * 3 * sizeof(glm::float32), creature->GetRenderPts(), GL_STREAM_DRAW);
     glNamedBufferData(col_buffer.id, creature->GetTotalNumPoints() * 4 * sizeof(glm::uint8), creature->GetRenderColours(), GL_STREAM_DRAW);
     ind_buffer.bind(GL_ELEMENT_ARRAY_BUFFER);
