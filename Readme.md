@@ -31,7 +31,7 @@
 * ~~implement modern opengl line renderer~~
 * ~~map saving~~
 * ~~hitbox outlines~~
-* hitbox moving & resizing
+* ~~hitbox moving & resizing~~
 * ~~save windows pos & grid~~
 * add option to lock player to current position
 

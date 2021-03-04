@@ -16,11 +16,15 @@ target_link_libraries(JumpAndRun fb-schemes glclasses creature-runtime cpp-color
 #    set_target_properties(JumpAndRun PROPERTIES LINK_FLAGS "/ENTRY:mainCRTStartup /SUBSYSTEM:WINDOWS")
 #endif()
 
+
 set (source "${CMAKE_SOURCE_DIR}/assets")
 set (destination "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
-add_custom_command(
-        TARGET JumpAndRun POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E create_symlink ${source} ${destination}
-        DEPENDS ${destination}
-        COMMENT "symbolic link resources folder from ${source} => ${destination}"
-)
+
+file(CREATE_LINK ${source} ${destination} SYMBOLIC)
+
+#add_custom_command(
+#        TARGET JumpAndRun POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E create_symlink ${source} ${destination}
+#        DEPENDS ${destination}
+#        COMMENT "symbolic link resources folder from ${source} => ${destination}"
+#)

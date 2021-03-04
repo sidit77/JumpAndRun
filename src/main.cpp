@@ -68,6 +68,8 @@ int main() {
         game->run();
     }
 
+    ImGui_ImplGlfw_Shutdown();
+
     jnr::services::window.reset();
 
     glfwTerminate();
