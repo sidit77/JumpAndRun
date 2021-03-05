@@ -2,6 +2,8 @@
 #include <MeshBone.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
+#include <util/filesystem.h>
+#include <rendering/formats/spritesheet.h>
 #include "util/window.h"
 #include "util/config.h"
 
@@ -14,7 +16,8 @@ Game::Game():
         player("assets/character/character_data.json", "assets/character/character_atlas.png"),
         primitiveRenderer(),
         levelRenderer("assets/sprites/tiles/tiles_spritesheet.png",13,13),
-        level(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat"))
+        level(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat")),
+        sprites(*jnr::services::filesystem->readResource<SpriteSheet>("assets/sprites/tiles/spritesheet.json"))
 {
 }
 

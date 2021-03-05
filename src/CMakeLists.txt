@@ -10,7 +10,7 @@ file(GLOB_RECURSE all_SRCS "*.cpp")
 
 add_executable(JumpAndRun ${all_SRCS})
 
-target_link_libraries(JumpAndRun fb-schemes glclasses creature-runtime cpp-colors imgui tinytoml ttvfs ttvfs_zip)
+target_link_libraries(JumpAndRun fb-schemes glclasses creature-runtime cpp-colors imgui tinytoml ttvfs ttvfs_zip nlohmann_json::nlohmann_json)
 
 #if(MSVC)
 #    set_target_properties(JumpAndRun PROPERTIES LINK_FLAGS "/ENTRY:mainCRTStartup /SUBSYSTEM:WINDOWS")

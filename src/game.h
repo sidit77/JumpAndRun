@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rendering/formats/spritesheet.h>
 #include "rendering/primitiverenderer.h"
 #include "level.h"
 #include "rendering/camera.h"
@@ -23,6 +24,7 @@ namespace jnr {
         PrimitiveRenderer primitiveRenderer;
         LevelRenderer levelRenderer;
         LevelWrapper level;
+        SpriteSheet sprites;
     private:
         Input lastInput;
     public:
