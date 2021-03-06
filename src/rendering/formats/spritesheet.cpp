@@ -13,6 +13,9 @@ std::optional<SpriteSheet> glc::loader::loadResource<>(const std::string &path, 
     auto j = json::parse(loader.loadString(path));
 
     auto texture = *glc::loader::loadResource<glc::Texture>(loader.relativePath(path, j["meta"]["image"]), loader);
+    texture.setFilterMode(TextureFilterModeMin::Nearest, TextureFilterModeMag::Nearest);
+
+    texture.setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 
     std::unordered_map<std::string, SpriteSheet::Sprite> sprites;
 
@@ -27,8 +30,8 @@ std::optional<SpriteSheet> glc::loader::loadResource<>(const std::string &path, 
         sprites.insert(std::make_pair(name, SpriteSheet::Sprite(
             sprite["frame"]["x"],
             sprite["frame"]["y"],
-            sprite["frame"]["width"],
-            sprite["frame"]["height"],
+            sprite["frame"].contains("w") ? sprite["frame"]["w"] : sprite["frame"]["width"],
+            sprite["frame"].contains("h") ? sprite["frame"]["h"] : sprite["frame"]["height"],
             size
         )));
     }

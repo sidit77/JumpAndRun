@@ -40,7 +40,7 @@ void CreatureRenderer::draw(glm::vec2 pos, float scale, const Camera &cam) {
     glDepthFunc(GL_LEQUAL);
     vao.bind();
     program.bind();
-    texture->bind(GL_TEXTURE0);
+    texture->bind(0);
     program.setUniformMatrix("cam", false, cam.matrix);
     program.setUniform("pos", pos);
     program.setUniform("scale", scale);
