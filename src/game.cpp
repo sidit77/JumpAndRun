@@ -17,7 +17,7 @@ Game::Game():
         primitiveRenderer(),
         levelRenderer("assets/sprites/tiles/tiles_spritesheet.png",13,13),
         level(getOrDefault<std::string>((*jnr::services::config)["level"]["name"], "assets/levels/level1.dat")),
-        sprites(*jnr::services::filesystem->readResource<SpriteSheet>("assets/sprites/tiles/spritesheet.json"))
+        sprites(*jnr::services::filesystem->readResource<SpriteSheet>("assets/sprites/tiles/texture.json"))
 {
 }
 

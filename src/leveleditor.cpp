@@ -112,7 +112,8 @@ void jnr::LevelEditor::render(float delta, float catchup) {
         currentMode->render();
 
         levelRenderer.beginRender(sprites);
-        levelRenderer.drawSprite("tiles/blue/tileBlue_01", vec2(-128,0), vec2(64,64));
+        levelRenderer.drawSprite("tileBlue_04.png", vec2(-128,0), vec2(64,64));
+        levelRenderer.drawSprite("tileBlue_05.png", vec2(-64,0), vec2(64,64));
         levelRenderer.finishRender(cam);
         //primitiveRenderer.drawQuad(vec2(0,0), vec2(64,64), +EditorColors::GRID);
 

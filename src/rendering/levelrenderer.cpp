@@ -1,6 +1,7 @@
 #include "levelrenderer.h"
 
 #include <gtc/type_ptr.hpp>
+#include <iostream>
 #include "util/filesystem.h"
 
 jnr::LevelRenderer::LevelRenderer(const std::string &path, int x, int y) :
@@ -8,6 +9,7 @@ program(*services::filesystem->readResource<glc::Program>("assets/shader/sprite.
 {
     vao.bind();
     vbo.bind(GL_ARRAY_BUFFER);
+    vbo.setLabel("LevelRenderer");
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_TRUE , sizeof(Vertex), (void*)sizeof(glm::vec3));
     glEnableVertexAttribArray(0);
@@ -38,7 +40,7 @@ void jnr::LevelRenderer::beginRender(const jnr::SpriteSheet &spriteSheet) {
 void jnr::LevelRenderer::finishRender(jnr::Camera &cam) {
     assert(currentSpriteSheet.has_value());
     program.bind();
-    currentSpriteSheet->get().texture.bind(GL_TEXTURE0);
+    currentSpriteSheet->get().texture.bind(0);
     vao.bind();
     program.setUniformMatrix("cam", false, cam.matrix);
     if(!sprites.empty()) {
