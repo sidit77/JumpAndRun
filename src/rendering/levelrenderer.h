@@ -6,8 +6,10 @@
 #include <glclasses/buffer.h>
 #include <glclasses/texture.h>
 #include <memory>
+#include <optional>
 #include "camera.h"
 #include "../util/noncopyable.h"
+#include "./formats/spritesheet.h"
 
 namespace jnr {
     class LevelRenderer : private NonCopyable{
@@ -21,16 +23,16 @@ namespace jnr {
 #pragma pack(pop)
         glc::VertexArray vao;
         glc::Buffer vbo;
-        glc::Texture texture;
         glc::Program program;
         std::vector<Vertex> sprites;
-        int dx, dy;
+        std::optional<std::reference_wrapper<const SpriteSheet>> currentSpriteSheet;
     public:
         LevelRenderer(const std::string& path, int x, int y);
 
-        void drawSprite(int id, glm::vec2 pos, glm::vec2 size, float z = -0.4f, glm::vec2 pivot = glm::vec2(0,0));
+        void beginRender(const SpriteSheet& spriteSheet);
+        void drawSprite(const std::string& name, glm::vec2 pos, glm::vec2 size, float z = -0.4f, glm::vec2 pivot = glm::vec2(0,0));
 
-        void render(jnr::Camera& cam);
+        void finishRender(jnr::Camera& cam);
     };
 }
 

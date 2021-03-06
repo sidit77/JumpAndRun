@@ -11,8 +11,11 @@ namespace jnr {
     class SpriteSheet {
     public:
         struct Sprite {
-            glm::vec2 pos;
-            glm::vec2 size;
+            glm::vec2 low;
+            glm::vec2 high;
+            Sprite(float x, float y, float w, float h, glm::vec2 size) :
+                low(glm::vec2(x,y + h) / size),
+                high(glm::vec2(x + w,y) / size){}
         };
         std::unordered_map<std::string, Sprite> sprites;
         glc::Texture texture;

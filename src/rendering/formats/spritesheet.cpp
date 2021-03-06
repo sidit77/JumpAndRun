@@ -24,10 +24,13 @@ std::optional<SpriteSheet> glc::loader::loadResource<>(const std::string &path, 
     std::cout << size.x << " | " << size.y << std::endl;
 
     for(auto& [name, sprite] : j["frames"].items()){
-        sprites.insert(std::make_pair(name, SpriteSheet::Sprite {
-            glm::vec2(sprite["frame"]["x"], sprite["frame"]["y"]) / size,
-            glm::vec2(sprite["frame"]["width"], sprite["frame"]["height"]) / size
-        }));
+        sprites.insert(std::make_pair(name, SpriteSheet::Sprite(
+            sprite["frame"]["x"],
+            sprite["frame"]["y"],
+            sprite["frame"]["width"],
+            sprite["frame"]["height"],
+            size
+        )));
     }
 
     return std::make_optional<SpriteSheet>(SpriteSheet(std::move(texture), sprites));

@@ -111,14 +111,16 @@ void jnr::LevelEditor::render(float delta, float catchup) {
 
         currentMode->render();
 
-        levelRenderer.drawSprite(0, vec2(-128,0), vec2(64,64));
+        levelRenderer.beginRender(sprites);
+        levelRenderer.drawSprite("tiles/blue/tileBlue_01", vec2(-128,0), vec2(64,64));
+        levelRenderer.finishRender(cam);
         //primitiveRenderer.drawQuad(vec2(0,0), vec2(64,64), +EditorColors::GRID);
 
         player.draw(0, 0, cam);
         if(debugOptions.showPlayerHitbox)
             player.drawDebug(0, 0, primitiveRenderer);
 
-        levelRenderer.render(cam);
+
         primitiveRenderer.render(cam);
     }
 }

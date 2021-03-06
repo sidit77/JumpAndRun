@@ -4,10 +4,7 @@
 #include "util/filesystem.h"
 
 jnr::LevelRenderer::LevelRenderer(const std::string &path, int x, int y) :
-program(*services::filesystem->readResource<glc::Program>("assets/shader/sprite.json")),
-texture(*services::filesystem->readResource<glc::Texture>(path)),
-dx(x),
-dy(y)
+program(*services::filesystem->readResource<glc::Program>("assets/shader/sprite.json"))
 {
     vao.bind();
     vbo.bind(GL_ARRAY_BUFFER);
@@ -17,25 +14,31 @@ dy(y)
     glEnableVertexAttribArray(1);
 }
 
-void jnr::LevelRenderer::drawSprite(int id, glm::vec2 pos, glm::vec2 size, float z, glm::vec2 pivot) {
+void jnr::LevelRenderer::drawSprite(const std::string& name, glm::vec2 pos, glm::vec2 size, float z, glm::vec2 pivot) {
+    assert(currentSpriteSheet.has_value());
+
     glm::vec2 low = pos - size * pivot;
     glm::vec2 high = pos + size;
 
-    int tx = id % dx;
-    int ty = id / dx;
+    auto sprite = (*currentSpriteSheet).get().sprites.at(name);
 
-    sprites.emplace_back(glm::vec3(low .x, low .y, z), glm::vec2(tx + 0, ty + 1) * (1.0f / dx));
-    sprites.emplace_back(glm::vec3(high.x, low .y, z), glm::vec2(tx + 1, ty + 1) * (1.0f / dx));
-    sprites.emplace_back(glm::vec3(high.x, high.y, z), glm::vec2(tx + 1, ty + 0) * (1.0f / dx));
-
-    sprites.emplace_back(glm::vec3(high.x, high.y, z), glm::vec2(tx + 1, ty + 0) * (1.0f / dx));
-    sprites.emplace_back(glm::vec3(low .x, high.y, z), glm::vec2(tx + 0, ty + 0) * (1.0f / dx));
-    sprites.emplace_back(glm::vec3(low .x, low .y, z), glm::vec2(tx + 0, ty + 1) * (1.0f / dx));
+    sprites.emplace_back(glm::vec3(low .x, low .y, z), glm::vec2(sprite.low .x, sprite.low .y));
+    sprites.emplace_back(glm::vec3(high.x, low .y, z), glm::vec2(sprite.high.x, sprite.low .y));
+    sprites.emplace_back(glm::vec3(high.x, high.y, z), glm::vec2(sprite.high.x, sprite.high.y));
+    sprites.emplace_back(glm::vec3(high.x, high.y, z), glm::vec2(sprite.high.x, sprite.high.y));
+    sprites.emplace_back(glm::vec3(low .x, high.y, z), glm::vec2(sprite.low .x, sprite.high.y));
+    sprites.emplace_back(glm::vec3(low .x, low .y, z), glm::vec2(sprite.low .x, sprite.low .y));
 }
 
-void jnr::LevelRenderer::render(jnr::Camera &cam) {
+void jnr::LevelRenderer::beginRender(const jnr::SpriteSheet &spriteSheet) {
+    assert(sprites.empty());
+    currentSpriteSheet.emplace(spriteSheet);
+}
+
+void jnr::LevelRenderer::finishRender(jnr::Camera &cam) {
+    assert(currentSpriteSheet.has_value());
     program.bind();
-    texture.bind(GL_TEXTURE0);
+    currentSpriteSheet->get().texture.bind(GL_TEXTURE0);
     vao.bind();
     program.setUniformMatrix("cam", false, cam.matrix);
     if(!sprites.empty()) {
@@ -43,4 +46,5 @@ void jnr::LevelRenderer::render(jnr::Camera &cam) {
         glDrawArrays(GL_TRIANGLES, 0, sprites.size());
         sprites.clear();
     }
+    currentSpriteSheet.reset();
 }
